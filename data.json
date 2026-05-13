@@ -10,5 +10,14 @@
     "fr": "Je suis allé(e) au magasin pour faire des achats.",
     "category": "shopping",
     "date": "2026-05-13"
+  },
+  {
+    "bn": "আমি কিছু কেনব",
+    "fr": "Je vais acheter quelque chose",
+    "fr_phonetic": "Zhay vay eh-shah-ter kuh-shuh shahk",
+    "bn_phonetic": "জে ভে এশাঁ-তের কুশু-শক",
+    "category": "buy something",
+    "date": "2026-05-13",
+    "id": "1778675511267"
   }
 ]
