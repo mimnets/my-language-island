@@ -9,7 +9,7 @@ const server = new McpServer({
 
 // ২. আপনার GitHub-এর Raw লিঙ্কটি এখানে বসান
 // (গিটহাবে গিয়ে data.json ফাইলটি ওপেন করে 'Raw' বাটনে ক্লিক করলে যে লিঙ্ক পাবেন সেটি)
-const GITHUB_RAW_URL = "আপনার_কপি_করা_RAW_লিঙ্ক_এখানে";
+const GITHUB_RAW_URL = "https://raw.githubusercontent.com/mimnets/my-language-island/refs/heads/main/data.json";
 
 // ৩. টুল তৈরি: আপনার আইল্যান্ডের বাক্যগুলো দেখার জন্য
 server.tool("get_my_island", {}, async () => {
