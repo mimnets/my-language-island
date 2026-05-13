@@ -68,10 +68,11 @@
                     <input id="searchInput" type="text" placeholder="Search..." class="w-full p-3 sm:p-4 pl-10 sm:pl-12 bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 outline-none focus:ring-2 focus:ring-indigo-300 text-sm" oninput="debouncedSearch()">
                     <span class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
                 </div>
-                <div class="relative mt-3">
-                    <div id="categoryPills" class="flex gap-2 overflow-x-auto pb-2 scrollbar-thin"></div>
-                    <!-- Gradient fade to indicate scrollability -->
-                    <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-50 to-transparent pointer-events-none"></div>
+                <div class="relative mt-3 pb-1 bg-white/40 rounded-xl p-1 border border-white/30">
+                    <div id="categoryPills" class="flex gap-2 overflow-x-auto py-2 px-1 scrollbar-thin min-h-[40px]"></div>
+                    <!-- Gradient fades to indicate scrollability -->
+                    <div class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-50/80 to-transparent pointer-events-none rounded-l-xl"></div>
+                    <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-50/80 to-transparent pointer-events-none rounded-r-xl"></div>
                 </div>
             </div>
             <div id="sentenceList" class="space-y-3 sm:space-y-4"></div>
@@ -473,22 +474,40 @@
             cats.sort(); // Alphabetical order
             
             var container = document.getElementById('categoryPills');
-            var html = '<button onclick="filterByCategory(\'all\')" class="category-pill px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium bg-indigo-600 text-white whitespace-nowrap flex-shrink-0">All</button>';
+            var html = '<button onclick="filterByCategory(\'all\', this)" class="category-pill px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium bg-indigo-600 text-white whitespace-nowrap flex-shrink-0">All</button>';
             for (var j = 0; j < cats.length; j++) {
                 var safeCat = cats[j].replace(/'/g, "\\'");
-                html += '<button onclick="filterByCategory(\'' + safeCat + '\')" class="category-pill px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-700 whitespace-nowrap flex-shrink-0">' + escapeHtml(cats[j]) + '</button>';
+                html += '<button onclick="filterByCategory(\'' + safeCat + '\', this)" class="category-pill px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-700 whitespace-nowrap flex-shrink-0">' + escapeHtml(cats[j]) + '</button>';
             }
             container.innerHTML = html;
         }
 
-        function filterByCategory(cat) {
+        function filterByCategory(cat, button) {
             var buttons = document.querySelectorAll('.category-pill');
             for (var i = 0; i < buttons.length; i++) {
                 buttons[i].classList.remove('bg-indigo-600', 'text-white');
                 buttons[i].classList.add('bg-gray-100', 'text-gray-600');
             }
-            event.target.classList.remove('bg-gray-100', 'text-gray-600');
-            event.target.classList.add('bg-indigo-600', 'text-white');
+            button.classList.remove('bg-gray-100', 'text-gray-600');
+            button.classList.add('bg-indigo-600', 'text-white');
+            
+            // Scroll the selected category into view
+            setTimeout(function() {
+                var container = document.getElementById('categoryPills');
+                var selectedBtn = button;
+                var containerRect = container.getBoundingClientRect();
+                var selectedRect = selectedBtn.getBoundingClientRect();
+                
+                // If selected button is not fully visible, scroll it into view
+                if (selectedRect.left < containerRect.left || selectedRect.right > containerRect.right) {
+                    selectedBtn.scrollIntoView({
+                        behavior: 'smooth',
+                        inline: 'center',
+                        block: 'nearest'
+                    });
+                }
+            }, 50);
+            
             if (cat === 'all') {
                 renderList(allData);
             } else {
