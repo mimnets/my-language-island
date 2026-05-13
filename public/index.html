@@ -71,6 +71,28 @@
                 <div id="categoryPills" class="flex gap-2 mt-3 overflow-x-auto pb-2"></div>
             </div>
             <div id="sentenceList" class="space-y-3 sm:space-y-4"></div>
+            <!-- Pagination -->
+            <div id="pagination" class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 hidden">
+                <div class="flex items-center gap-3">
+                    <div class="text-xs text-gray-500">
+                        Showing <span id="pageStart">0</span>-<span id="pageEnd">0</span> of <span id="totalItems">0</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <span class="text-xs text-gray-500">Per page:</span>
+                        <select id="pageSize" onchange="changePageSize()" class="text-xs border rounded px-2 py-1 bg-white">
+                            <option value="10" selected>10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="prevPage()" id="prevBtn" class="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm">← Previous</button>
+                    <span class="px-3 py-2 text-sm text-gray-700">Page <span id="currentPage">1</span></span>
+                    <button onclick="nextPage()" id="nextBtn" class="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm">Next →</button>
+                </div>
+            </div>
         </section>
 
         <!-- Recall Tab -->
@@ -223,6 +245,10 @@
         var isAdmin = false;
         var searchTimeout = null;
         var cardRevealed = false;
+        // Pagination variables
+        var currentPage = 1;
+        var itemsPerPage = 10;
+        var currentFilteredData = [];
 
         document.addEventListener('DOMContentLoaded', function() {
             loadIsland();
@@ -276,14 +302,34 @@
         }
 
         function renderList(items) {
+            // Set current filtered data for pagination
+            currentFilteredData = items;
+            currentPage = 1; // Reset to first page
+            updatePagination();
+        }
+        
+        function updatePagination() {
             var list = document.getElementById('sentenceList');
-            if (items.length === 0) {
+            var pagination = document.getElementById('pagination');
+            
+            if (currentFilteredData.length === 0) {
                 list.innerHTML = '<div class="text-center py-12 text-gray-400"><div class="text-4xl mb-2">🏝️</div><p class="text-sm">No sentences found</p></div>';
+                pagination.classList.add('hidden');
                 return;
             }
+            
+            // Calculate pagination
+            var totalPages = Math.ceil(currentFilteredData.length / itemsPerPage);
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+            
+            var startIndex = (currentPage - 1) * itemsPerPage;
+            var endIndex = Math.min(startIndex + itemsPerPage, currentFilteredData.length);
+            
+            // Render current page items (newest first)
             var html = '';
-            for (var k = items.length - 1; k >= 0; k--) {
-                var item = items[k];
+            for (var k = endIndex - 1; k >= startIndex; k--) {
+                var item = currentFilteredData[k];
                 var bn = escapeHtml(item.bn || '');
                 var fr = escapeHtml(item.fr || '');
                 var frPh = escapeHtml(item.fr_phonetic || '');
@@ -303,6 +349,49 @@
                     (item.date ? '<p class="text-[10px] sm:text-xs text-gray-400 mt-2">' + item.date + '</p>' : '') + '</div>';
             }
             list.innerHTML = html;
+            
+            // Update pagination UI
+            document.getElementById('pageStart').textContent = startIndex + 1;
+            document.getElementById('pageEnd').textContent = endIndex;
+            document.getElementById('totalItems').textContent = currentFilteredData.length;
+            document.getElementById('currentPage').textContent = currentPage;
+            
+            // Show/hide pagination based on need
+            if (currentFilteredData.length > itemsPerPage) {
+                pagination.classList.remove('hidden');
+                // Enable/disable buttons
+                document.getElementById('prevBtn').disabled = (currentPage === 1);
+                document.getElementById('nextBtn').disabled = (currentPage === totalPages);
+            } else {
+                pagination.classList.add('hidden');
+            }
+        }
+        
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                updatePagination();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+        
+        function nextPage() {
+            var totalPages = Math.ceil(currentFilteredData.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                updatePagination();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+        
+        function changePageSize() {
+            var select = document.getElementById('pageSize');
+            var newSize = parseInt(select.value);
+            if (newSize !== itemsPerPage) {
+                itemsPerPage = newSize;
+                currentPage = 1; // Reset to first page
+                updatePagination();
+            }
         }
 
         function renderResources(items) {
@@ -359,11 +448,20 @@
         }
 
         function updateCategoryPills() {
-            var cats = [];
+            var catsMap = {};
             for (var i = 0; i < allData.length; i++) {
-                var cat = allData[i].category;
-                if (cat && cats.indexOf(cat) === -1) cats.push(cat);
+                var cat = allData[i].category || 'General';
+                if (cat) {
+                    // Use lowercase as key to merge case variations
+                    var key = cat.toLowerCase();
+                    if (!catsMap[key]) {
+                        catsMap[key] = cat; // Store original case for display
+                    }
+                }
             }
+            var cats = Object.values(catsMap);
+            cats.sort(); // Alphabetical order
+            
             var container = document.getElementById('categoryPills');
             var html = '<button onclick="filterByCategory(\'all\')" class="category-pill px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium bg-indigo-600 text-white whitespace-nowrap flex-shrink-0">All</button>';
             for (var j = 0; j < cats.length; j++) {
@@ -381,11 +479,14 @@
             }
             event.target.classList.remove('bg-gray-100', 'text-gray-600');
             event.target.classList.add('bg-indigo-600', 'text-white');
-            if (cat === 'all') renderList(allData);
-            else {
+            if (cat === 'all') {
+                renderList(allData);
+            } else {
                 var filtered = [];
+                var catLower = cat.toLowerCase();
                 for (var j = 0; j < allData.length; j++) {
-                    if (allData[j].category === cat) filtered.push(allData[j]);
+                    var itemCat = allData[j].category || 'General';
+                    if (itemCat.toLowerCase() === catLower) filtered.push(allData[j]);
                 }
                 renderList(filtered);
             }
