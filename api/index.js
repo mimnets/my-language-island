@@ -1,11 +1,12 @@
 const express = require('express');
-const axios = require('axios');
 const app = express();
 app.use(express.json());
 
-// কনফিগারেশন - Vercel Env থেকে আসবে
-const { GITHUB_TOKEN, GEMINI_API_KEY, ADMIN_EMAIL } = process.env;
-const REPO_OWNER = "mimnets"; 
+// কনফিগারেশন
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const REPO_OWNER = "mimnets";
 const REPO_NAME = "my-language-island";
 const FILE_PATH = "data.json";
 
@@ -13,50 +14,64 @@ const FILE_PATH = "data.json";
 app.get('/api/island', async (req, res) => {
     try {
         const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
-        const response = await axios.get(url, { headers: { Authorization: `token ${GITHUB_TOKEN}` } });
-        const content = Buffer.from(response.data.content, 'base64').toString();
+        const response = await fetch(url, {
+            headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        
+        if (!response.ok) return res.json([]); // ফাইল না পেলে বা সমস্যা হলে খালি লিস্ট
+        
+        const data = await response.json();
+        const content = Buffer.from(data.content, 'base64').toString();
         res.json(JSON.parse(content));
     } catch (e) {
-        res.json([]); // ডাটা না থাকলে খালি লিস্ট
+        res.status(500).json({ error: "Failed to load island data" });
     }
 });
 
-// ২. এডমিন চেক করার এন্ডপয়েন্ট (নিরাপদ পদ্ধতি)
+// ২. এডমিন চেক
 app.post('/api/check-admin', (req, res) => {
     const { email } = req.body;
     const isAdmin = email && ADMIN_EMAIL && (email.toLowerCase() === ADMIN_EMAIL.toLowerCase());
-    res.json({ isAdmin });
+    res.json({ isAdmin: !!isAdmin });
 });
 
-// ৩. AI দিয়ে বাক্য জেনারেট করা
+// ৩. AI দিয়ে বাক্য জেনারেট
 app.post('/api/ai-generate', async (req, res) => {
     const { topic } = req.body;
+    if (!GEMINI_API_KEY) return res.status(500).json({ error: "Gemini Key missing" });
+
     try {
-        const prompt = `Generate a unique French sentence about "${topic}" with its Bengali translation. Return ONLY a JSON object like this: {"bn": "বাংলা অনুবাদ", "fr": "French Sentence"}`;
+        const prompt = `Generate a unique French sentence about "${topic}" with its Bengali translation. Return ONLY a JSON object: {"bn": "...", "fr": "..."}`;
         const genUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
         
-        const response = await axios.post(genUrl, {
-            contents: [{ parts: [{ text: prompt }] }]
+        const response = await fetch(genUrl, {
+            method: 'POST',
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
         
-        let text = response.data.candidates[0].content.parts[0].text;
+        const data = await response.json();
+        let text = data.candidates[0].content.parts[0].text;
         text = text.replace(/```json|
 ```/g, "").trim();
         res.json(JSON.parse(text));
     } catch (e) {
-        res.status(500).json({ error: "AI failed to generate content" });
+        res.status(500).json({ error: "AI failed" });
     }
 });
 
-// ৪. গিটহাবে ডাটা সেভ করা
+// ৪. গিটহাবে সেভ করা
 app.post('/api/add', async (req, res) => {
     const { bn, fr, category, userEmail } = req.body;
     const isAdmin = userEmail && ADMIN_EMAIL && (userEmail.toLowerCase() === ADMIN_EMAIL.toLowerCase());
 
     try {
         const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
-        const getFile = await axios.get(url, { headers: { Authorization: `token ${GITHUB_TOKEN}` } });
-        let currentData = JSON.parse(Buffer.from(getFile.data.content, 'base64').toString());
+        const getFileRes = await fetch(url, {
+            headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        
+        const fileData = await getFileRes.json();
+        let currentData = JSON.parse(Buffer.from(fileData.content, 'base64').toString());
 
         currentData.push({ 
             bn, fr, category: category || 'General', 
@@ -64,13 +79,19 @@ app.post('/api/add', async (req, res) => {
             approved: isAdmin 
         });
 
-        await axios.put(url, {
-            message: `Sentence added by ${userEmail}`,
-            content: Buffer.from(JSON.stringify(currentData, null, 2)).toString('base64'),
-            sha: getFile.data.sha
-        }, { headers: { Authorization: `token ${GITHUB_TOKEN}` } });
+        const updateRes = await fetch(url, {
+            method: 'PUT',
+            headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: `Update by ${userEmail}`,
+                content: Buffer.from(JSON.stringify(currentData, null, 2)).toString('base64'),
+                sha: fileData.sha
+            })
+        });
 
-        res.json({ success: true });
+        if (updateRes.ok) res.json({ success: true });
+        else throw new Error("GitHub update failed");
+
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
