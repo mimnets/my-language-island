@@ -369,7 +369,7 @@
                     document.getElementById('aiTopic').value = '';
                     showToast('Sentence added!', 'success');
                 } else {
-                    showToast(data.error || 'Failed', 'error');
+                    var msg = data.error === 'rate_limit' ? 'AI quota exceeded. Wait a few seconds and try again!' : (data.error || 'Failed'); showToast(msg, 'error');
                 }
             } catch (e) { showToast('AI generation failed', 'error'); }
             btn.disabled = false;
@@ -405,7 +405,7 @@
                     status.textContent = data.error || 'Failed to submit';
                     status.className = 'mt-4 text-center text-sm text-red-600';
                     status.classList.remove('hidden');
-                    showToast(data.error || 'Failed', 'error');
+                    var msg = data.error === 'rate_limit' ? 'AI quota exceeded. Wait a few seconds and try again!' : (data.error || 'Failed'); showToast(msg, 'error');
                 }
             } catch (e) { showToast('Submission failed', 'error'); }
             btn.disabled = false;

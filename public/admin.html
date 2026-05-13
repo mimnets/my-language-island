@@ -147,7 +147,7 @@
                     loadStats();
                     loadPending();
                 } else {
-                    alert('Error: ' + (data.error || 'Failed'));
+                    var msg = data.error === 'rate_limit' ? data.message : ('Error: ' + (data.error || 'Failed')); alert(msg);
                 }
             } catch(e) { alert('Failed to approve'); }
         }
@@ -165,7 +165,7 @@
                     loadStats();
                     loadPending();
                 } else {
-                    alert('Error: ' + (data.error || 'Failed'));
+                    var msg = data.error === 'rate_limit' ? data.message : ('Error: ' + (data.error || 'Failed')); alert(msg);
                 }
             } catch(e) { alert('Failed to reject'); }
         }
@@ -188,7 +188,7 @@
                     document.getElementById('aiTopic').value = '';
                     loadStats();
                 } else {
-                    alert('Error: ' + (data.error || 'Failed'));
+                    var msg = data.error === 'rate_limit' ? data.message : ('Error: ' + (data.error || 'Failed')); alert(msg);
                 }
             } catch(e) { alert('Failed to generate'); }
             btn.disabled = false;
