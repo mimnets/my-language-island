@@ -221,7 +221,7 @@ app.post('/api/admin/approve', async (req, res) => {
 });
 
 // POST /admin/reject - Reject a submission (admin only)
-app.post('/api/admin/reject', async (req, res) => {
+app.post('/admin/reject', async (req, res) => {
     try {
         const { email, id } = req.body;
         
@@ -272,15 +272,15 @@ app.post('/api/add-sentence', async (req, res) => {
         
         if (generateAI && topic) {
             if (!GEMINI_API_KEY) {
-                throw new Error('GEMINI_API_KEY environment variable is not set');
+                return res.status(500).json({ 
+                    error: 'GEMINI_API_KEY is not set. Please add it to Vercel environment variables.' 
+                });
             }
             
             const prompt = `Generate exactly one French learning sentence for the topic "${topic}". Return ONLY valid JSON like this, no markdown or extra text:
 {"bn": "Bengali translation", "fr": "French sentence", "category": "${topic}"}`;
             
             const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
-            
-            console.log('Calling Gemini API with key:', GEMINI_API_KEY ? 'SET (' + GEMINI_API_KEY.substring(0, 10) + '...)' : 'NOT SET');
             
             const aiResponse = await fetch(GEMINI_URL, {
                 method: 'POST',
@@ -291,17 +291,24 @@ app.post('/api/add-sentence', async (req, res) => {
                 })
             });
             
-            console.log('Gemini response status:', aiResponse.status);
+            // Check for rate limit (429)
+            if (aiResponse.status === 429) {
+                return res.status(429).json({ 
+                    error: 'rate_limit',
+                    message: 'AI quota exceeded. Please wait a few seconds and try again, or check your Google AI quota at ai.google.dev/rate-limit',
+                    retryAfter: 20
+                });
+            }
             
             if (!aiResponse.ok) {
-                const errorText = await aiResponse.text();
-                console.log('Gemini error response:', errorText);
-                throw new Error('Gemini API failed: ' + errorText);
+                const errorData = await aiResponse.json();
+                const errorMsg = errorData?.error?.message || 'Unknown error';
+                return res.status(aiResponse.status).json({ 
+                    error: 'Gemini API failed: ' + errorMsg 
+                });
             }
             
             const aiData = await aiResponse.json();
-            console.log('Gemini response:', JSON.stringify(aiData));
-            
             const aiText = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
             
             if (aiText) {
