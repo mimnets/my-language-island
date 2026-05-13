@@ -3,43 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sabbir's French Island</title>
+    <title>Monir's French Island</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 p-5">
-    <div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-md">
-        <h1 class="text-3xl font-bold text-blue-600 mb-6 text-center">🇫🇷 Language Island</h1>
-        
-        <!-- Form -->
-        <div class="mb-8 space-y-4">
-            <input id="bn" type="text" placeholder="বাংলা বাক্য" class="w-full p-3 border rounded-lg">
-            <input id="fr" type="text" placeholder="French Translation" class="w-full p-3 border rounded-lg">
-            <button onclick="addSentence()" class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700">Add to Island</button>
-        </div>
+<body class="bg-slate-50 min-h-screen p-4 md:p-10">
+    <div class="max-w-3xl mx-auto">
+        <div class="bg-white p-6 rounded-2xl shadow-xl mb-6">
+            <h1 class="text-3xl font-bold text-indigo-700 text-center mb-6">🇫🇷 Language Island</h1>
+            
+            <!-- Input Form -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <input id="bn" type="text" placeholder="বাংলা বাক্য" class="p-3 border rounded-xl focus:ring-2 focus:ring-indigo-400 outline-none">
+                <input id="fr" type="text" placeholder="French Translation" class="p-3 border rounded-xl focus:ring-2 focus:ring-indigo-400 outline-none">
+            </div>
+            <div class="flex gap-4 mb-4">
+                <select id="category" class="w-1/2 p-3 border rounded-xl bg-white">
+                    <option value="General">General</option>
+                    <option value="Apparel">Apparel Industry</option>
+                    <option value="Tech">Software Dev</option>
+                </select>
+                <button onclick="addSentence()" id="addBtn" class="w-1/2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition">Add Sentence</button>
+            </div>
 
-        <h2 class="text-xl font-semibold mb-4">My Sentences</h2>
-        <div id="list" class="space-y-3"></div>
+            <hr class="my-6">
+
+            <!-- Search & Filter -->
+            <div class="flex flex-col md:flex-row gap-4 mb-6">
+                <input id="search" onkeyup="filterList()" type="text" placeholder="সার্চ করুন (বাংলা বা ফরাসি)..." class="flex-grow p-3 border rounded-xl bg-gray-50">
+            </div>
+
+            <!-- Sentence List -->
+            <div id="list" class="space-y-4">
+                <p class="text-center text-gray-400">Loading island...</p>
+            </div>
+        </div>
     </div>
 
     <script>
+        let allData = [];
+
         async function loadIsland() {
             const res = await fetch('/api/island');
-            const data = await res.json();
-            document.getElementById('list').innerHTML = data.reverse().map(item => `
-                <div class="p-4 bg-gray-50 border-l-4 border-blue-500 rounded">
-                    <p class="font-bold text-gray-800">${item.fr}</p>
-                    <p class="text-gray-600 text-sm">${item.bn}</p>
+            allData = await res.json();
+            renderList(allData);
+        }
+
+        function renderList(items) {
+            const listDiv = document.getElementById('list');
+            listDiv.innerHTML = items.reverse().map(item => `
+                <div class="p-4 bg-white border border-gray-100 shadow-sm rounded-xl relative hover:border-indigo-300 transition">
+                    <span class="absolute top-3 right-3 text-[10px] font-black uppercase tracking-wider bg-indigo-100 text-indigo-600 px-2 py-1 rounded-md">
+                        ${item.category || 'General'}
+                    </span>
+                    <p class="text-lg font-semibold text-gray-800 pr-16">${item.fr}</p>
+                    <p class="text-gray-500 mt-1">${item.bn}</p>
+                    <p class="text-[10px] text-gray-300 mt-2">${item.date || ''}</p>
                 </div>
             `).join('');
         }
 
+        function filterList() {
+            const term = document.getElementById('search').value.toLowerCase();
+            const filtered = allData.filter(i => i.bn.toLowerCase().includes(term) || i.fr.toLowerCase().includes(term));
+            renderList(filtered);
+        }
+
         async function addSentence() {
-            const bn = document.getElementById('bn').value;
-            const fr = document.getElementById('fr').value;
+            const btn = document.getElementById('addBtn');
+            const payload = {
+                bn: document.getElementById('bn').value,
+                fr: document.getElementById('fr').value,
+                category: document.getElementById('category').value
+            };
+            
+            if(!payload.bn || !payload.fr) return alert("দয়া করে দুটি ঘরই পূরণ করুন।");
+
+            btn.disabled = true; btn.innerText = "Saving...";
             await fetch('/api/add', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ bn, fr })
+                body: JSON.stringify(payload)
             });
             location.reload();
         }
