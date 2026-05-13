@@ -663,7 +663,91 @@
             btn.textContent = 'Submit for Review';
         }
 
-        function speak(text) { if (!text) return; var msg = new SpeechSynthesisUtterance(text); msg.lang = 'fr-FR'; msg.rate = 0.85; window.speechSynthesis.speak(msg); }
+        var cachedVoices = null;
+        var voiceLoadAttempted = false;
+        
+        function loadVoices(callback) {
+            if (cachedVoices) {
+                callback(cachedVoices);
+                return;
+            }
+            var voices = window.speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                cachedVoices = voices;
+                callback(voices);
+                return;
+            }
+            // Wait for voices to load
+            if (!voiceLoadAttempted) {
+                voiceLoadAttempted = true;
+                window.speechSynthesis.onvoiceschanged = function() {
+                    cachedVoices = window.speechSynthesis.getVoices();
+                    callback(cachedVoices);
+                };
+            } else {
+                callback([]);
+            }
+        }
+        
+        function getFrenchVoice(voices) {
+            // Prefer French voices
+            for (var i = 0; i < voices.length; i++) {
+                if (voices[i].lang.startsWith('fr-') && voices[i].localService) {
+                    return voices[i];
+                }
+            }
+            for (var i = 0; i < voices.length; i++) {
+                if (voices[i].lang.startsWith('fr-')) {
+                    return voices[i];
+                }
+            }
+            // Fallback: any local service voice
+            for (var i = 0; i < voices.length; i++) {
+                if (voices[i].localService) {
+                    return voices[i];
+                }
+            }
+            // Return first available or null
+            return voices.length > 0 ? voices[0] : null;
+        }
+        
+        function speak(text) {
+            if (!text) return;
+            
+            // Cancel any ongoing speech
+            window.speechSynthesis.cancel();
+            
+            loadVoices(function(voices) {
+                var msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'fr-FR';
+                
+                // Select best voice
+                var voice = getFrenchVoice(voices);
+                if (voice) {
+                    msg.voice = voice;
+                    msg.lang = voice.lang;
+                }
+                
+                // Optimize for mobile vs desktop
+                var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                
+                if (isMobile) {
+                    // Slower rate for mobile clarity
+                    msg.rate = 0.75;
+                    msg.pitch = 1.0;
+                    msg.volume = 1.0;
+                } else {
+                    msg.rate = 0.85;
+                    msg.pitch = 1.0;
+                    msg.volume = 1.0;
+                }
+                
+                // Optional: Add slight pause after punctuation
+                // French already includes spaces after punctuation, so we don't modify
+                
+                window.speechSynthesis.speak(msg);
+            });
+        }
         function escapeHtml(str) { var div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
         function showToast(message, type) {
             var toast = document.getElementById('toast');
