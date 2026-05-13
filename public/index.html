@@ -3,89 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monirul's Language Island 🇫🇷</title>
+    <title>French Language Island</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        .active-tab { border-bottom: 3px solid #4f46e5; color: #4f46e5; font-weight: bold; }
+    </style>
 </head>
-<body class="bg-slate-50 min-h-screen pb-20">
+<body class="bg-slate-50 min-h-screen">
 
-    <!-- Nav -->
-    <nav class="bg-indigo-700 text-white p-4 shadow-lg sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold flex items-center gap-2">🇫🇷 Language Island</h1>
-            <div id="login-container">
-                <div id="g_id_onload" data-client_id="339348039848-9sc9fgbg3ap3879d8a385m961q7noi18.apps.googleusercontent.com" data-callback="handleCredentialResponse"></div>
-                <div class="g_id_signin" data-type="standard"></div>
+    <!-- Navigation Menu -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 overflow-x-auto">
+            <div class="flex space-x-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500">
+                <button onclick="switchTab('island')" id="tab-island" class="active-tab">🏝️ My Island</button>
+                <button onclick="switchTab('recall')" id="tab-recall">🧠 Active Recall</button>
+                <button onclick="switchTab('suggest')" id="tab-suggest">➕ Add Sentence</button>
+                <button onclick="switchTab('about')" id="tab-about">📖 About & How-to</button>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-3xl mx-auto p-4 mt-8">
+    <main class="max-w-3xl mx-auto p-4 mt-6">
         
-        <!-- Admin Tool (Gemini AI) -->
-        <div id="adminPanel" class="hidden bg-white p-6 rounded-3xl shadow-sm mb-8 border-2 border-indigo-100">
-            <h2 class="font-bold text-indigo-700 mb-4 text-xs uppercase tracking-widest">Admin Control: AI Generator</h2>
-            <div class="flex gap-3">
-                <input id="aiTopic" type="text" placeholder="Topic: e.g. Factory, React Code, Coffee Shop" class="flex-grow p-4 bg-slate-50 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-400">
-                <button onclick="generateAI()" id="aiBtn" class="bg-indigo-600 text-white px-8 rounded-2xl font-bold hover:bg-indigo-800 transition shadow-lg">Generate</button>
+        <!-- SECTION 1: MY ISLAND (List & Categories) -->
+        <div id="section-island" class="tab-content">
+            <div class="flex flex-col md:flex-row gap-4 mb-6">
+                <input id="search" onkeyup="filterList()" type="text" placeholder="সার্চ বা ক্যাটাগরি (উদা: Tech, Apparel)..." 
+                       class="flex-grow p-4 bg-white shadow-sm rounded-2xl outline-none focus:ring-2 focus:ring-indigo-400">
+            </div>
+            <div id="list" class="space-y-4"></div>
+        </div>
+
+        <!-- SECTION 2: ACTIVE RECALL (Flashcard Mode) -->
+        <div id="section-recall" class="tab-content hidden">
+            <div class="bg-indigo-700 p-8 rounded-3xl text-center shadow-xl min-h-[300px] flex flex-col justify-center items-center">
+                <h2 class="text-indigo-200 text-sm uppercase tracking-widest mb-4">Active Recall Mode</h2>
+                <div id="recall-card" class="cursor-pointer">
+                    <p id="recall-bn" class="text-white text-2xl font-bold mb-6">ক্লিক করে শুরু করুন</p>
+                    <p id="recall-fr" class="text-indigo-300 text-3xl font-black hidden"></p>
+                </div>
+                <div class="mt-8 flex gap-4">
+                    <button onclick="nextRecall()" class="bg-white text-indigo-700 px-6 py-2 rounded-xl font-bold">Next Sentence</button>
+                    <button onclick="speakRecall()" class="bg-indigo-500 text-white p-2 rounded-xl">🔊</button>
+                </div>
+            </div>
+            <div class="mt-6 text-gray-500 text-sm p-4 border-l-4 border-indigo-200">
+                নিয়ম: প্রথমে বাংলা দেখে ফরাসি উচ্চারণ মনে করার চেষ্টা করুন। কার্ডে ক্লিক করলে ফরাসি উত্তর দেখা যাবে।
             </div>
         </div>
 
-        <!-- Search & Tools -->
-        <div class="flex flex-col md:flex-row gap-4 mb-8">
-            <input id="search" onkeyup="filterList()" type="text" placeholder="খুঁজুন (বাংলা বা ফরাসি)..." class="flex-grow p-4 bg-white shadow-sm rounded-2xl outline-none">
-            <button onclick="toggleRecall()" id="recallBtn" class="bg-orange-500 text-white px-8 py-4 rounded-2xl font-bold shadow-md hover:bg-orange-600 transition">Active Recall</button>
+        <!-- SECTION 3: SUGGEST SENTENCE (Manual Add) -->
+        <div id="section-suggest" class="tab-content hidden">
+            <div class="bg-white p-8 rounded-3xl shadow-sm border">
+                <h2 class="text-xl font-bold text-indigo-700 mb-6 text-center">নতুন বাক্য যোগ করুন</h2>
+                <div class="space-y-4">
+                    <input id="new-bn" type="text" placeholder="বাংলা বাক্য" class="w-full p-4 bg-gray-50 rounded-xl outline-none">
+                    <input id="new-fr" type="text" placeholder="French Translation" class="w-full p-4 bg-gray-50 rounded-xl outline-none">
+                    <input id="new-cat" type="text" placeholder="Category (e.g. Daily)" class="w-full p-4 bg-gray-50 rounded-xl outline-none">
+                    <button onclick="submitManual()" id="submitBtn" class="w-full bg-indigo-600 text-white p-4 rounded-xl font-bold shadow-lg">Submit for Approval</button>
+                </div>
+                <p class="text-xs text-gray-400 mt-4 text-center">আপনার বাক্যটি অ্যাডমিন চেক করার পর মেইন লিস্টে যুক্ত হবে।</p>
+            </div>
         </div>
 
-        <!-- Island List -->
-        <div id="list" class="space-y-4"></div>
+        <!-- SECTION 4: ABOUT & HOW IT WORKS -->
+        <div id="section-about" class="tab-content hidden">
+            <div class="bg-white p-8 rounded-3xl shadow-sm border prose prose-indigo">
+                <h2 class="text-2xl font-bold text-indigo-700">Language Island Method কি?</h2>
+                <p>এটি একটি বৈজ্ঞানিক পদ্ধতি যেখানে আপনি পুরো ডিকশনারি না শিখে নিজের দৈনন্দিন জীবনের প্রয়োজনীয় বাক্যগুলোর একটি "দ্বীপ" তৈরি করেন।</p>
+                <h3 class="font-bold mt-4">কিভাবে প্র্যাকটিস করবেন (Shadowing):</h3>
+                <ol class="list-decimal ml-5 space-y-2 text-gray-600">
+                    <li>বাক্যের পাশের অডিও বাটনটি চাপুন।</li>
+                    <li>মনোযোগ দিয়ে উচ্চারণ শুনুন।</li>
+                    <li>অডিও থামার সাথে সাথে হুবহু একইভাবে জোরে জোরে উচ্চারণ করুন।</li>
+                    <li>প্রতিটি বাক্য অন্তত ৫ বার রিপিট করুন।</li>
+                </ol>
+                <h3 class="font-bold mt-4">Flood Your Ears:</h3>
+                <p>আপনার এই লিস্টটি প্রতিদিন অন্তত একবার স্ক্রল করুন এবং প্রতিটি অডিও শুনুন। এতে আপনার কান ফরাসি শব্দে অভ্যস্ত হবে।</p>
+            </div>
+        </div>
+
     </main>
-
-    <!-- AI Approval Modal -->
-    <div id="modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
-        <div class="bg-white p-8 rounded-3xl max-w-md w-full shadow-2xl">
-            <h3 class="text-xl font-bold text-indigo-700 mb-4">Confirm AI Generation</h3>
-            <div class="bg-indigo-50 p-4 rounded-2xl mb-6 text-center">
-                <p id="modal-fr" class="text-2xl font-bold text-indigo-900 mb-2"></p>
-                <p id="modal-bn" class="text-gray-600 italic"></p>
-            </div>
-            <div class="flex gap-4">
-                <button onclick="saveAIContent()" class="flex-grow bg-indigo-600 text-white p-4 rounded-2xl font-bold">Save</button>
-                <button onclick="closeModal()" class="flex-grow bg-gray-100 text-gray-600 p-4 rounded-2xl font-bold">Cancel</button>
-            </div>
-        </div>
-    </div>
 
     <script>
         let allData = [];
-        let recallMode = false;
-        let currentUser = null;
-        let pendingSentence = null;
-
-        async function handleCredentialResponse(response) {
-            try {
-                const base64Url = response.credential.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const payload = JSON.parse(window.atob(base64));
-                currentUser = payload.email;
-
-                // ব্যাকএন্ডকে জিজ্ঞেস করা এটি এডমিন কি না
-                const adminCheck = await fetch('/api/check-admin', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email: currentUser })
-                });
-                const { isAdmin } = await adminCheck.json();
-                
-                if (isAdmin) {
-                    document.getElementById('adminPanel').classList.remove('hidden');
-                }
-                
-                document.getElementById('login-container').innerHTML = `
-                    <img src="${payload.picture}" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
-                `;
-            } catch (e) { console.error("Login failed", e); }
-        }
+        let recallIndex = 0;
 
         async function loadIsland() {
             const res = await fetch('/api/island');
@@ -93,66 +95,76 @@
             renderList(allData);
         }
 
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('nav button').forEach(el => el.classList.remove('active-tab'));
+            
+            document.getElementById('section-' + tab).classList.remove('hidden');
+            document.getElementById('tab-' + tab).classList.add('active-tab');
+            
+            if(tab === 'recall') nextRecall();
+        }
+
         function renderList(items) {
             const listDiv = document.getElementById('list');
             listDiv.innerHTML = [...items].reverse().map(item => `
-                <div class="p-6 bg-white rounded-3xl shadow-sm border border-gray-50 flex justify-between items-center group">
-                    <div class="flex-grow cursor-pointer" onclick="this.querySelector('.fr-text').classList.toggle('hidden')">
-                        <span class="text-[10px] font-bold text-indigo-300 uppercase tracking-tighter">${item.category || 'General'}</span>
+                <div class="p-5 bg-white rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center hover:border-indigo-200 transition-all">
+                    <div>
+                        <span class="text-[10px] bg-indigo-50 text-indigo-500 px-2 py-1 rounded-md font-bold uppercase">${item.category || 'General'}</span>
                         <p class="text-lg text-gray-700 font-medium mt-1">${item.bn}</p>
-                        <p class="fr-text text-2xl font-bold text-indigo-700 mt-2 ${recallMode ? 'hidden' : ''}">${item.fr}</p>
+                        <p class="text-xl font-bold text-indigo-700 mt-1">${item.fr}</p>
                     </div>
-                    <button onclick="speak('${item.fr}')" class="ml-4 bg-indigo-50 p-4 rounded-2xl hover:bg-indigo-600 hover:text-white transition">🔊</button>
+                    <button onclick="speak('${item.fr}')" class="bg-indigo-50 p-3 rounded-full hover:bg-indigo-600 hover:text-white transition">🔊</button>
                 </div>
             `).join('');
         }
 
+        // Active Recall Logic
+        function nextRecall() {
+            if(allData.length === 0) return;
+            recallIndex = Math.floor(Math.random() * allData.length);
+            document.getElementById('recall-bn').innerText = allData[recallIndex].bn;
+            document.getElementById('recall-fr').innerText = allData[recallIndex].fr;
+            document.getElementById('recall-fr').classList.add('hidden');
+        }
+
+        document.getElementById('recall-card').onclick = function() {
+            document.getElementById('recall-fr').classList.remove('hidden');
+        }
+
+        function speakRecall() { speak(allData[recallIndex].fr); }
+
         function speak(text) {
             const msg = new SpeechSynthesisUtterance(text);
             msg.lang = 'fr-FR';
-            msg.rate = 0.8;
+            msg.rate = 0.85;
             window.speechSynthesis.speak(msg);
         }
 
-        function toggleRecall() {
-            recallMode = !recallMode;
-            renderList(allData);
-        }
+        async function submitManual() {
+            const bn = document.getElementById('new-bn').value;
+            const fr = document.getElementById('new-fr').value;
+            const category = document.getElementById('new-cat').value;
+            if(!bn || !fr) return alert("Fill all fields");
 
-        async function generateAI() {
-            const topic = document.getElementById('aiTopic').value;
-            if(!topic) return;
-            const btn = document.getElementById('aiBtn');
-            btn.innerText = "...";
-            try {
-                const res = await fetch('/api/ai-generate', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ topic })
-                });
-                const data = await res.json();
-                pendingSentence = { ...data, category: topic };
-                document.getElementById('modal-fr').innerText = data.fr;
-                document.getElementById('modal-bn').innerText = data.bn;
-                document.getElementById('modal').classList.remove('hidden');
-            } catch (e) { alert("AI Error"); }
-            btn.innerText = "Generate";
-        }
-
-        async function saveAIContent() {
-            await fetch('/api/add', {
+            const res = await fetch('/api/add', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ ...pendingSentence, userEmail: currentUser })
+                body: JSON.stringify({ bn, fr, category, userEmail: "public_user" })
             });
-            location.reload();
+            if(res.ok) {
+                alert("Thank you! Admin will approve soon.");
+                location.reload();
+            }
         }
-
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 
         function filterList() {
             const term = document.getElementById('search').value.toLowerCase();
-            const filtered = allData.filter(i => i.bn.toLowerCase().includes(term) || i.fr.toLowerCase().includes(term));
+            const filtered = allData.filter(i => 
+                i.bn.toLowerCase().includes(term) || 
+                i.fr.toLowerCase().includes(term) || 
+                (i.category && i.category.toLowerCase().includes(term))
+            );
             renderList(filtered);
         }
 
