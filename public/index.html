@@ -69,10 +69,13 @@
                     <span class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
                 </div>
                 <div class="relative mt-3 pb-1 bg-white/40 rounded-xl p-1 border border-white/30">
-                    <div id="categoryPills" class="flex gap-2 overflow-x-auto py-2 px-1 scrollbar-thin min-h-[40px]"></div>
+                    <div id="categoryPills" class="flex gap-2 overflow-x-auto py-2 px-1 scrollbar-thin min-h-[40px] min-w-0"></div>
                     <!-- Gradient fades to indicate scrollability -->
                     <div class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-50/80 to-transparent pointer-events-none rounded-l-xl"></div>
                     <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-50/80 to-transparent pointer-events-none rounded-r-xl"></div>
+                </div>
+                <div class="hidden sm:flex justify-center mt-1">
+                    <span class="text-[10px] text-gray-500 bg-white/80 px-3 py-1 rounded-full border border-gray-200">Shift+scroll বা ক্লিক করে ড্রাগ করুন</span>
                 </div>
             </div>
             <div id="sentenceList" class="space-y-3 sm:space-y-4"></div>
@@ -242,11 +245,17 @@
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         .safe-area-inset { padding-top: env(safe-area-inset-top); }
         /* Custom thin scrollbar for category pills */
-        .scrollbar-thin::-webkit-scrollbar { height: 4px; }
+        .scrollbar-thin::-webkit-scrollbar { height: 6px; }
         .scrollbar-thin::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-        .scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .scrollbar-thin { scrollbar-width: thin; scrollbar-color: #cbd5e1 #f1f5f9; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .scrollbar-thin:hover::-webkit-scrollbar { height: 8px; }
+        .scrollbar-thin { scrollbar-width: thin; scrollbar-color: #94a3b8 #f1f5f9; }
+        /* Force scrollbar visibility on desktop */
+        @media (min-width: 768px) {
+            .scrollbar-thin::-webkit-scrollbar { height: 8px; }
+            .scrollbar-thin::-webkit-scrollbar-thumb { background: #64748b; }
+        }
     </style>
 
     <script>
