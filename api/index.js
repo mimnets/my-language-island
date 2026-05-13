@@ -2,7 +2,13 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
-const { GITHUB_TOKEN, GEMINI_API_KEY, ADMIN_EMAIL } = process.env;
+// কনফিগারেশন - ম্যানুয়ালি টেস্ট করার জন্য
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+// এখানে আপনার আসল জিমেইলটি দিন টেস্ট করার জন্য
+const ADMIN_EMAIL = "mdmonirulislammonir@gmail.com"; 
+
 const REPO_OWNER = "mimnets";
 const REPO_NAME = "my-language-island";
 const FILE_PATH = "data.json";
@@ -18,20 +24,28 @@ app.get('/api/island', async (req, res) => {
     } catch (e) { res.json([]); }
 });
 
-// ২. AI জেনারেট এবং গিটহাবে সেভ (একসাথে)
+// ২. AI জেনারেট এবং গিটহাবে সেভ
 app.post('/api/admin/add-ai', async (req, res) => {
     const { topic, email } = req.body;
-    // এডমিন ভেরিফিকেশন
-    if (email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return res.status(403).json({error: "Unauthorized"});
+    
+    console.log("Logged Email:", email); // চেক করার জন্য লগে প্রিন্ট হবে
+    console.log("Admin Email:", ADMIN_EMAIL);
+
+    // ইমেইল চেক (ছোট হাতের অক্ষরে মিলিয়ে)
+    if (!email || email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+        return res.status(403).json({ error: "Unauthorized User: " + email });
+    }
 
     try {
         // AI থেকে ডাটা নেওয়া
-        const prompt = `Return ONLY JSON: {"bn": "বাংলা", "fr": "French"} for topic: ${topic}`;
+        const prompt = `Return ONLY JSON: {"bn": "...", "fr": "..."} for topic: ${topic}`;
         const genUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        
         const aiRes = await fetch(genUrl, {
             method: 'POST',
             body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
+        
         const aiData = await aiRes.json();
         const cleanText = aiData.candidates[0].content.parts[0].text.replace(/```json|
 ```/g, "").trim();
@@ -45,7 +59,7 @@ app.post('/api/admin/add-ai', async (req, res) => {
 
         currentData.push({ ...newSentence, category: topic, date: new Date().toLocaleDateString() });
 
-        await fetch(repoUrl, {
+        const updateRes = await fetch(repoUrl, {
             method: 'PUT',
             headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -54,8 +68,14 @@ app.post('/api/admin/add-ai', async (req, res) => {
                 sha: fileJson.sha
             })
         });
-        res.json({ success: true, data: newSentence });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+
+        if(updateRes.ok) res.json({ success: true });
+        else throw new Error("GitHub update failed");
+
+    } catch (e) { 
+        console.error(e);
+        res.status(500).json({ error: e.message }); 
+    }
 });
 
 module.exports = app;
