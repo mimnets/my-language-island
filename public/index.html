@@ -2,179 +2,205 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🇫🇷 French Language Island</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         .tab-active { border-bottom: 3px solid #6366f1; color: #6366f1; }
         .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px -5px rgba(0,0,0,0.1); }
         .phonetic { font-family: monospace; font-size: 0.85em; }
+        body { overscroll-behavior: none; }
+        @media (max-width: 640px) {
+            .mobile-padding { padding-left: 1rem; padding-right: 1rem; }
+            .mobile-text { font-size: 0.875rem; }
+            .mobile-btn { padding: 0.75rem 1rem; }
+            .hide-mobile { display: none; }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-indigo-50 min-h-screen">
 
-    <header class="bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto px-4 py-4">
+    <!-- Mobile Header with Admin Button -->
+    <header class="bg-white/90 backdrop-blur-sm shadow-sm sticky top-0 z-50 safe-area-inset">
+        <div class="max-w-4xl mx-auto px-4 py-3">
             <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-2xl font-bold text-indigo-700">🏝️ Language Island</h1>
-                    <p class="text-xs text-gray-500">French for Apparel Professionals</p>
+                <div class="flex items-center gap-3">
+                    <button onclick="switchTab('island')" class="text-2xl hover:opacity-70 transition">🏝️</button>
+                    <div>
+                        <h1 class="text-lg sm:text-xl font-bold text-indigo-700">Language Island</h1>
+                        <p class="text-[10px] sm:text-xs text-gray-500 hide-mobile">French for Apparel Professionals</p>
+                    </div>
                 </div>
-                <div class="text-right text-sm text-gray-600">
-                    <span id="totalCount" class="font-bold text-indigo-600">0</span> sentences
+                <div class="flex items-center gap-2">
+                    <span id="totalCount" class="text-sm font-bold text-indigo-600">0</span>
+                    <span class="text-xs text-gray-400 hide-mobile">sentences</span>
+                    <a href="/admin.html" class="ml-2 bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition" title="Admin Panel">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </a>
                 </div>
             </div>
         </div>
     </header>
 
-    <nav class="bg-white border-b">
-        <div class="max-w-4xl mx-auto px-4">
-            <div class="flex overflow-x-auto">
-                <button onclick="switchTab('island')" id="tab-island" class="tab-active px-6 py-4 text-sm font-semibold whitespace-nowrap transition-colors hover:text-indigo-600">🏝️ Island</button>
-                <button onclick="switchTab('recall')" id="tab-recall" class="px-6 py-4 text-sm font-semibold text-gray-500 whitespace-nowrap transition-colors hover:text-indigo-600">🧠 Active Recall</button>
-                <button onclick="switchTab('add')" id="tab-add" class="px-6 py-4 text-sm font-semibold text-gray-500 whitespace-nowrap transition-colors hover:text-indigo-600">➕ Add Sentence</button>
-                <button onclick="switchTab('about')" id="tab-about" class="px-6 py-4 text-sm font-semibold text-gray-500 whitespace-nowrap transition-colors hover:text-indigo-600">📖 About</button>
+    <!-- Tab Navigation -->
+    <nav class="bg-white border-b sticky top-[60px] sm:top-[68px] z-40">
+        <div class="max-w-4xl mx-auto">
+            <div class="flex overflow-x-auto scrollbar-hide">
+                <button onclick="switchTab('island')" id="tab-island" class="tab-active flex-shrink-0 px-4 sm:px-6 py-3 text-sm font-semibold whitespace-nowrap transition-colors hover:text-indigo-600">🏝️ <span class="hide-mobile">Island</span></button>
+                <button onclick="switchTab('recall')" id="tab-recall" class="flex-shrink-0 px-4 sm:px-6 py-3 text-sm font-semibold text-gray-500 whitespace-nowrap transition-colors hover:text-indigo-600">🧠 <span class="hide-mobile">Recall</span></button>
+                <button onclick="switchTab('add')" id="tab-add" class="flex-shrink-0 px-4 sm:px-6 py-3 text-sm font-semibold text-gray-500 whitespace-nowrap transition-colors hover:text-indigo-600">➕ <span class="hide-mobile">Add</span></button>
+                <button onclick="switchTab('about')" id="tab-about" class="flex-shrink-0 px-4 sm:px-6 py-3 text-sm font-semibold text-gray-500 whitespace-nowrap transition-colors hover:text-indigo-600">📖 <span class="hide-mobile">About</span></button>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-3xl mx-auto px-4 py-8">
+    <!-- Main Content -->
+    <main class="max-w-3xl mx-auto mobile-padding py-4 sm:py-8">
 
+        <!-- Island Tab -->
         <section id="section-island" class="tab-content">
-            <div class="mb-6">
+            <div class="mb-4 sm:mb-6">
                 <div class="relative">
-                    <input id="searchInput" type="text" placeholder="Search sentences or categories..." 
-                           class="w-full p-4 pl-12 bg-white rounded-2xl shadow-sm border border-gray-100 outline-none focus:ring-2 focus:ring-indigo-300"
+                    <input id="searchInput" type="text" placeholder="Search..." 
+                           class="w-full p-3 sm:p-4 pl-10 sm:pl-12 bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 outline-none focus:ring-2 focus:ring-indigo-300 text-sm"
                            oninput="debouncedSearch()">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+                    <span class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
                 </div>
                 <div id="categoryPills" class="flex gap-2 mt-3 overflow-x-auto pb-2"></div>
             </div>
-            <div id="sentenceList" class="space-y-4">
-                <div class="text-center py-12 text-gray-400"><div class="text-4xl mb-2">🏝️</div><p>Loading your island...</p></div>
-            </div>
+            <div id="sentenceList" class="space-y-3 sm:space-y-4"></div>
         </section>
 
+        <!-- Recall Tab -->
         <section id="section-recall" class="tab-content hidden">
-            <div class="mb-6">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border">
-                    <h3 class="font-semibold text-gray-700 mb-3">🔐 Admin Verification (for AI Generator)</h3>
-                    <div class="flex gap-3">
-                        <input id="adminEmail" type="email" placeholder="your@email.com" class="flex-grow p-3 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300">
-                        <button onclick="verifyAdmin()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition">Verify</button>
+            <div class="mb-4 sm:mb-6">
+                <div class="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border">
+                    <h3 class="font-semibold text-gray-700 mb-3 text-sm sm:text-base">🔐 Admin Verification (for AI)</h3>
+                    <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                        <input id="adminEmail" type="email" placeholder="your@email.com" class="flex-grow p-2 sm:p-3 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300 text-sm">
+                        <button onclick="verifyAdmin()" class="bg-indigo-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-semibold hover:bg-indigo-700 transition text-sm">Verify</button>
                     </div>
                 </div>
             </div>
 
             <div id="flashcardContainer" class="hidden">
-                <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-3xl p-8 min-h-[320px] flex flex-col justify-center items-center shadow-2xl cursor-pointer" onclick="revealCard()">
-                    <p class="text-indigo-200 text-xs uppercase tracking-widest mb-4">Recall French</p>
-                    <p id="cardBengali" class="text-white text-xl font-medium mb-2">বাংলা বাক্য</p>
-                    <p id="cardBnPhonetic" class="text-indigo-300 text-sm italic mb-6 phonetic">bn phonetic</p>
-                    <p id="cardFrench" class="text-white text-3xl font-bold hidden">French</p>
-                    <p id="cardFrPhonetic" class="text-indigo-200 text-lg italic hidden phonetic">fr phonetic</p>
-                    <p id="tapHint" class="text-indigo-300 text-sm mt-4">Tap to reveal French</p>
+                <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-2xl sm:rounded-3xl p-4 sm:p-8 min-h-[260px] sm:min-h-[280px] flex flex-col justify-center items-center shadow-2xl cursor-pointer" onclick="revealCard()">
+                    <p class="text-indigo-200 text-[10px] sm:text-xs uppercase tracking-widest mb-2 sm:mb-4">Recall French</p>
+                    <p id="cardBengali" class="text-white text-lg sm:text-xl font-medium mb-1 sm:mb-2 text-center px-2">বাংলা বাক্য</p>
+                    <p id="cardBnPhonetic" class="text-indigo-300 text-xs sm:text-sm italic mb-3 sm:mb-6 phonetic text-center">bn phonetic</p>
+                    <p id="cardFrench" class="text-white text-2xl sm:text-3xl font-bold hidden text-center px-2">French</p>
+                    <p id="cardFrPhonetic" class="text-indigo-200 text-sm sm:text-lg italic hidden phonetic text-center px-2">fr phonetic</p>
+                    <p id="tapHint" class="text-indigo-300 text-xs sm:text-sm mt-3 sm:mt-4">Tap to reveal French</p>
                 </div>
 
-                <div class="flex justify-center gap-4 mt-8">
-                    <button onclick="prevCard()" class="bg-white px-5 py-3 rounded-xl shadow-sm border hover:bg-gray-50 transition font-medium">← Previous</button>
-                    <button onclick="speakCurrent()" class="bg-indigo-100 text-indigo-700 p-3 rounded-xl hover:bg-indigo-200 transition text-xl">🔊</button>
-                    <button onclick="nextCard()" class="bg-white px-5 py-3 rounded-xl shadow-sm border hover:bg-gray-50 transition font-medium">Next →</button>
+                <div class="flex justify-center items-center gap-3 sm:gap-4 mt-6 sm:mt-8">
+                    <button onclick="prevCard()" class="bg-white px-4 sm:px-5 py-2 sm:py-3 rounded-xl shadow-sm border hover:bg-gray-50 transition font-medium text-sm">←</button>
+                    <button onclick="speakCurrent()" class="bg-indigo-100 text-indigo-700 p-2 sm:p-3 rounded-xl hover:bg-indigo-200 transition text-lg sm:text-xl">🔊</button>
+                    <button onclick="nextCard()" class="bg-white px-4 sm:px-5 py-2 sm:py-3 rounded-xl shadow-sm border hover:bg-gray-50 transition font-medium text-sm">→</button>
                 </div>
 
-                <div id="aiGenerator" class="mt-8 hidden">
-                    <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-6 rounded-2xl border border-amber-200">
-                        <h4 class="font-semibold text-amber-800 mb-3">✨ AI Sentence Generator</h4>
-                        <div class="grid md:grid-cols-2 gap-3 mb-3">
-                            <input id="aiTopic" type="text" placeholder="Topic (e.g. Fashion)" class="p-3 rounded-xl border border-amber-200 outline-none">
-                            <input id="aiCategory" type="text" placeholder="Category name" class="p-3 rounded-xl border border-amber-200 outline-none">
+                <div id="aiGenerator" class="mt-6 sm:mt-8 hidden">
+                    <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-amber-200">
+                        <h4 class="font-semibold text-amber-800 mb-3 text-sm sm:text-base">✨ AI Generator</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 mb-3">
+                            <input id="aiTopic" type="text" placeholder="Topic (e.g. Fashion)" class="p-2 sm:p-3 rounded-xl border border-amber-200 outline-none text-sm">
+                            <input id="aiCategory" type="text" placeholder="Category" class="p-2 sm:p-3 rounded-xl border border-amber-200 outline-none text-sm">
                         </div>
-                        <button onclick="generateAI()" id="aiBtn" class="w-full bg-amber-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-amber-600 transition">Generate with Phonetics</button>
+                        <button onclick="generateAI()" id="aiBtn" class="w-full bg-amber-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-semibold hover:bg-amber-600 transition text-sm">Generate</button>
                     </div>
                 </div>
             </div>
 
             <div id="emptyRecall" class="text-center py-12 text-gray-400 hidden">
-                <div class="text-4xl mb-2">🧠</div><p>No sentences yet. Add some from the Island tab!</p>
+                <div class="text-4xl mb-2">🧠</div><p class="text-sm">No sentences yet</p>
             </div>
         </section>
 
+        <!-- Add Tab -->
         <section id="section-add" class="tab-content hidden">
-            <div class="bg-white p-8 rounded-2xl shadow-sm border">
-                <h2 class="text-xl font-bold text-gray-800 mb-2">➕ Submit New Sentence</h2>
-                <p class="text-sm text-gray-500 mb-6">Your sentence will be reviewed by admin before adding to the island.</p>
+            <div class="bg-white p-4 sm:p-8 rounded-xl sm:rounded-2xl shadow-sm border">
+                <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-1">➕ Submit New Sentence</h2>
+                <p class="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">Your sentence will be reviewed by admin.</p>
                 
-                <div class="space-y-4">
+                <div class="space-y-3 sm:space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">Your Email (optional)</label>
-                        <input id="submitterEmail" type="email" placeholder="your@email.com" class="w-full p-4 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300">
+                        <label class="block text-xs sm:text-sm font-medium text-gray-600 mb-1">Your Email (optional)</label>
+                        <input id="submitterEmail" type="email" placeholder="your@email.com" class="w-full p-2 sm:p-4 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300 text-sm">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">Bengali (বাংলা) *</label>
-                        <input id="addBn" type="text" placeholder="বাংলা বাক্য লিখুন" class="w-full p-4 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300">
+                        <label class="block text-xs sm:text-sm font-medium text-gray-600 mb-1">Bengali (বাংলা) *</label>
+                        <input id="addBn" type="text" placeholder="বাংলা বাক্য লিখুন" class="w-full p-2 sm:p-4 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300 text-sm">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">French *</label>
-                        <input id="addFr" type="text" placeholder="French translation" class="w-full p-4 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300">
+                        <label class="block text-xs sm:text-sm font-medium text-gray-600 mb-1">French *</label>
+                        <input id="addFr" type="text" placeholder="French translation" class="w-full p-2 sm:p-4 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300 text-sm">
                     </div>
-                    <div class="grid md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-1">🇫🇷 French Phonetic (উচ্চারণ)</label>
-                            <input id="addFrPhonetic" type="text" placeholder="e.g. bon-ZHOOR" class="w-full p-4 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300">
+                            <label class="block text-xs sm:text-sm font-medium text-gray-600 mb-1">🇫🇷 French Phonetic</label>
+                            <input id="addFrPhonetic" type="text" placeholder="e.g. bon-ZHOOR" class="w-full p-2 sm:p-4 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300 text-sm">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-1">🇧🇩 Bengali Phonetic (বাংলা উচ্চারণ)</label>
-                            <input id="addBnPhonetic" type="text" placeholder="e.g. বোঁ-জোর" class="w-full p-4 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300">
+                            <label class="block text-xs sm:text-sm font-medium text-gray-600 mb-1">🇧🇩 Bengali Phonetic</label>
+                            <input id="addBnPhonetic" type="text" placeholder="e.g. বোঁ-জোর" class="w-full p-2 sm:p-4 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300 text-sm">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">Category</label>
-                        <input id="addCat" type="text" placeholder="e.g. Fashion, Daily, Apparel" class="w-full p-4 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300">
+                        <label class="block text-xs sm:text-sm font-medium text-gray-600 mb-1">Category</label>
+                        <input id="addCat" type="text" placeholder="e.g. Fashion, Daily, Apparel" class="w-full p-2 sm:p-4 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300 text-sm">
                     </div>
-                    <button onclick="submitSentence()" id="submitBtn" class="w-full bg-indigo-600 text-white p-4 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition">Submit for Review</button>
+                    <button onclick="submitSentence()" id="submitBtn" class="w-full bg-indigo-600 text-white p-3 sm:p-4 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition text-sm sm:text-base">Submit for Review</button>
                 </div>
                 <p id="addStatus" class="mt-4 text-center text-sm hidden"></p>
             </div>
         </section>
 
+        <!-- About Tab -->
         <section id="section-about" class="tab-content hidden">
-            <div class="bg-white p-8 rounded-2xl shadow-sm border space-y-6">
+            <div class="bg-white p-4 sm:p-8 rounded-xl sm:rounded-2xl shadow-sm border space-y-4 sm:space-y-6">
                 <div>
-                    <h2 class="text-2xl font-bold text-indigo-700 mb-4">🏝️ Language Island Method</h2>
-                    <p class="text-gray-600 leading-relaxed">Instead of memorizing entire dictionaries, build your own island of essential sentences for your daily work life.</p>
+                    <h2 class="text-xl sm:text-2xl font-bold text-indigo-700 mb-2 sm:mb-4">🏝️ Language Island Method</h2>
+                    <p class="text-gray-600 leading-relaxed text-sm sm:text-base">Build your own island of essential sentences for your daily work life.</p>
                 </div>
-                <div class="bg-indigo-50 p-6 rounded-xl">
-                    <h3 class="font-bold text-indigo-800 mb-3">🎯 How to Practice (Shadowing)</h3>
-                    <ol class="list-decimal ml-5 space-y-2 text-gray-700">
-                        <li>Press the 🔊 button to hear the French sentence</li>
-                        <li>Listen carefully to the pronunciation</li>
-                        <li>Speak out loud at the same time as the audio</li>
-                        <li>Repeat each sentence 5-10 times</li>
-                        <li>Review your island daily for best results</li>
+                <div class="bg-indigo-50 p-4 sm:p-6 rounded-xl">
+                    <h3 class="font-bold text-indigo-800 mb-2 sm:mb-3 text-sm sm:text-base">🎯 Shadowing Method</h3>
+                    <ol class="list-decimal ml-4 sm:ml-5 space-y-1 sm:space-y-2 text-gray-700 text-sm">
+                        <li>Press 🔊 to hear French</li>
+                        <li>Listen carefully</li>
+                        <li>Speak out loud with audio</li>
+                        <li>Repeat 5-10 times</li>
                     </ol>
                 </div>
-                <div class="bg-amber-50 p-6 rounded-xl">
-                    <h3 class="font-bold text-amber-800 mb-3">✨ Active Recall Tips</h3>
-                    <ul class="list-disc ml-5 space-y-2 text-gray-700">
-                        <li>First try to recall without looking at French</li>
-                        <li>Only reveal when you have tried to remember</li>
-                        <li>Use the AI generator to quickly add new sentences</li>
-                        <li>Focus on categories relevant to your work</li>
+                <div class="bg-amber-50 p-4 sm:p-6 rounded-xl">
+                    <h3 class="font-bold text-amber-800 mb-2 sm:mb-3 text-sm sm:text-base">✨ Active Recall</h3>
+                    <ul class="list-disc ml-4 sm:ml-5 space-y-1 sm:space-y-2 text-gray-700 text-sm">
+                        <li>Try to recall without looking</li>
+                        <li>Only reveal after trying</li>
+                        <li>Use AI to add sentences</li>
                     </ul>
                 </div>
-                <div class="text-center text-sm text-gray-400">
-                    <p>Built for <strong>Monirul Islam</strong> 🇧🇩</p>
+                <div class="text-center text-xs sm:text-sm text-gray-400">
+                    <p>Built for <strong>Monirul Islam</strong> 🇧p>
                     <p class="mt-1">Powered by Groq AI & GitHub</p>
                 </div>
             </div>
         </section>
-
     </main>
 
-    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none">
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none z-50 text-sm">
         <span id="toastText">Notification</span>
     </div>
+
+    <style>
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .safe-area-inset { padding-top: env(safe-area-inset-top); }
+    </style>
 
     <script>
         var allData = [];
@@ -205,20 +231,25 @@
                 buttons[i].classList.remove('tab-active');
                 buttons[i].classList.add('text-gray-500');
             }
-            document.getElementById('tab-' + tab).classList.add('tab-active');
-            document.getElementById('tab-' + tab).classList.remove('text-gray-500');
+            var tabBtn = document.getElementById('tab-' + tab);
+            if (tabBtn) {
+                tabBtn.classList.add('tab-active');
+                tabBtn.classList.remove('text-gray-500');
+            }
             var sections = document.querySelectorAll('.tab-content');
             for (var j = 0; j < sections.length; j++) {
                 sections[j].classList.add('hidden');
             }
-            document.getElementById('section-' + tab).classList.remove('hidden');
+            var section = document.getElementById('section-' + tab);
+            if (section) section.classList.remove('hidden');
             if (tab === 'recall') initRecall();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function renderList(items) {
             var list = document.getElementById('sentenceList');
             if (items.length === 0) {
-                list.innerHTML = '<div class="text-center py-12 text-gray-400"><div class="text-4xl mb-2">🏝️</div><p>No sentences found</p></div>';
+                list.innerHTML = '<div class="text-center py-12 text-gray-400"><div class="text-4xl mb-2">🏝️</div><p class="text-sm">No sentences found</p></div>';
                 return;
             }
             var html = '';
@@ -230,23 +261,23 @@
                 var bnPh = escapeHtml(item.bn_phonetic || '');
                 var cat = escapeHtml(item.category || 'General');
                 
-                html += '<div class="card-hover p-5 bg-white rounded-2xl shadow-sm border border-gray-100 transition-all">' +
-                    '<div class="flex justify-between items-start gap-4">' +
-                    '<div class="flex-grow">' +
-                    '<span class="inline-block text-[10px] bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md font-bold uppercase mb-2">' + cat + '</span>' +
-                    '<p class="text-gray-500 text-sm mb-1">' + bn + '</p>' +
-                    (bnPh ? '<p class="text-gray-400 text-xs italic mb-2 phonetic">🔤 ' + bnPh + '</p>' : '') +
-                    '<p class="text-xl font-bold text-indigo-700">' + fr + '</p>' +
-                    (frPh ? '<p class="text-indigo-400 text-sm italic phonetic">🔤 ' + frPh + '</p>' : '') + 
+                html += '<div class="card-hover p-3 sm:p-5 bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 transition-all">' +
+                    '<div class="flex justify-between items-start gap-3 sm:gap-4">' +
+                    '<div class="flex-grow min-w-0">' +
+                    '<span class="inline-block text-[10px] bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md font-bold uppercase mb-1 sm:mb-2">' + cat + '</span>' +
+                    '<p class="text-gray-500 text-xs sm:text-sm mb-1">' + bn + '</p>' +
+                    (bnPh ? '<p class="text-gray-400 text-[10px] sm:text-xs italic mb-1 sm:mb-2 phonetic">🔤 ' + bnPh + '</p>' : '') +
+                    '<p class="text-base sm:text-xl font-bold text-indigo-700">' + fr + '</p>' +
+                    (frPh ? '<p class="text-indigo-400 text-xs sm:text-sm italic phonetic">🔤 ' + frPh + '</p>' : '') + 
                     '</div>' +
-                    '<button onclick="speak(\'' + fr.replace(/'/g, "\\'") + '\')" class="flex-shrink-0 bg-indigo-50 p-3 rounded-full hover:bg-indigo-600 hover:text-white transition-colors text-lg" title="Listen">🔊</button></div>' +
-                    (item.date ? '<p class="text-xs text-gray-400 mt-2">' + item.date + '</p>' : '') + '</div>';
+                    '<button onclick="speak(\'' + fr.replace(/'/g, "\\'") + '\')" class="flex-shrink-0 bg-indigo-50 p-2 sm:p-3 rounded-full hover:bg-indigo-600 hover:text-white transition-colors text-base sm:text-lg">🔊</button></div>' +
+                    (item.date ? '<p class="text-[10px] sm:text-xs text-gray-400 mt-2">' + item.date + '</p>' : '') + '</div>';
             }
             list.innerHTML = html;
         }
 
         function renderEmpty() {
-            document.getElementById('sentenceList').innerHTML = '<div class="text-center py-12 text-gray-400"><div class="text-4xl mb-2">⚠️</div><p>Failed to load data</p></div>';
+            document.getElementById('sentenceList').innerHTML = '<div class="text-center py-12 text-gray-400"><div class="text-4xl mb-2">⚠️</div><p class="text-sm">Failed to load data</p></div>';
         }
 
         function updateCategoryPills() {
@@ -256,10 +287,10 @@
                 if (cat && cats.indexOf(cat) === -1) cats.push(cat);
             }
             var container = document.getElementById('categoryPills');
-            var html = '<button onclick="filterByCategory(\'all\')" class="category-pill px-3 py-1 rounded-full text-xs font-medium bg-indigo-600 text-white whitespace-nowrap">All</button>';
+            var html = '<button onclick="filterByCategory(\'all\')" class="category-pill px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium bg-indigo-600 text-white whitespace-nowrap flex-shrink-0">All</button>';
             for (var j = 0; j < cats.length; j++) {
                 var safeCat = cats[j].replace(/'/g, "\\'");
-                html += '<button onclick="filterByCategory(\'' + safeCat + '\')" class="category-pill px-3 py3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-700 whitespace-nowrap">' + escapeHtml(cats[j]) + '</button>';
+                html += '<button onclick="filterByCategory(\'' + safeCat + '\')" class="category-pill px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-700 whitespace-nowrap flex-shrink-0">' + escapeHtml(cats[j]) + '</button>';
             }
             container.innerHTML = html;
         }
@@ -395,13 +426,13 @@
                     updateCategoryPills();
                     document.getElementById('aiTopic').value = '';
                     document.getElementById('aiCategory').value = '';
-                    showToast('Sentence added with phonetics!', 'success');
+                    showToast('Sentence added!', 'success');
                 } else {
                     showToast(data.error || 'Failed', 'error');
                 }
             } catch (e) { showToast('AI generation failed', 'error'); }
             btn.disabled = false;
-            btn.textContent = 'Generate with Phonetics';
+            btn.textContent = 'Generate';
         }
 
         async function submitSentence() {
@@ -462,7 +493,7 @@
             var toast = document.getElementById('toast');
             var toastText = document.getElementById('toastText');
             toastText.textContent = message;
-            toast.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full shadow-lg transition-opacity duration-300 pointer-events-none';
+            toast.className = 'fixed bottom-20 left-1/2 -translate-x-1/2 px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-lg transition-opacity duration-300 pointer-events-none z-50 text-sm';
             if (type === 'error') toast.classList.add('bg-red-600', 'text-white');
             else if (type === 'success') toast.classList.add('bg-green-600', 'text-white');
             else toast.classList.add('bg-gray-800', 'text-white');

@@ -2,88 +2,117 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Admin Panel - Language Island</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        @media (max-width: 640px) {
+            .mobile-text { font-size: 0.875rem; }
+            .mobile-padding { padding-left: 1rem; padding-right: 1rem; }
+        }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen p-8">
+<body class="bg-gray-100 min-h-screen">
 
-    <div class="max-w-5xl mx-auto">
-        <div class="bg-white p-8 rounded-3xl shadow-lg mb-8">
-            <div class="flex justify-between items-center border-b pb-6 mb-6">
-                <div>
-                    <h1 class="text-2xl font-bold text-indigo-700">🔐 Admin Panel</h1>
-                    <p class="text-sm text-gray-500">Language Island Management</p>
-                </div>
-                <div id="adminInfo" class="hidden flex items-center gap-4">
-                    <span id="adminName" class="font-bold text-indigo-600"></span>
-                    <button onclick="logout()" class="bg-red-100 text-red-600 px-4 py-2 rounded-xl font-semibold hover:bg-red-200 transition">Sign Out</button>
-                </div>
-            </div>
-            
-            <div id="loginSection">
-                <div class="flex justify-center">
-                    <div id="g_id_onload" data-client_id="339348039848-9sc9fgbg3ap3879d8a385m961q7noi18.apps.googleusercontent.com" data-callback="handleAdminLogin"></div>
-                    <div class="g_id_signin" data-type="standard"></div>
-                </div>
-            </div>
-
-            <div id="adminTools" class="hidden space-y-8">
-                
-                <!-- AI Generator with Phonetics -->
-                <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-6 rounded-2xl border border-amber-200">
-                    <h3 class="font-bold text-amber-800 mb-4">✨ AI Generator (with Phonetics)</h3>
-                    <div class="grid md:grid-cols-2 gap-4">
-                        <input id="aiTopic" type="text" placeholder="Topic (e.g. Fashion, Shopping)" class="p-3 rounded-xl border border-amber-200 outline-none">
-                        <input id="aiCategory" type="text" placeholder="Category name" class="p-3 rounded-xl border border-amber-200 outline-none">
-                    </div>
-                    <button onclick="generateAI()" id="genBtn" class="mt-4 w-full bg-amber-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-amber-600 transition">Generate with Phonetics</button>
-                </div>
-
-                <!-- Stats -->
-                <div class="grid md:grid-cols-3 gap-6">
-                    <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-200">
-                        <h3 class="font-bold text-indigo-800 mb-3">📊 Island Statistics</h3>
-                        <div class="space-y-2">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Total Sentences</span>
-                                <span id="totalApproved" class="font-bold text-indigo-700">0</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Pending Review</span>
-                                <span id="totalPending" class="font-bold text-amber-700">0</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-green-50 p-6 rounded-2xl border border-green-200 md:col-span-2">
-                        <h3 class="font-bold text-green-800 mb-3">🔊 Text-to-Speech Test</h3>
-                        <div class="flex gap-3">
-                            <input id="testFr" type="text" placeholder="French text to speak" class="flex-grow p-3 rounded-xl border border-green-200 outline-none">
-                            <button onclick="testSpeak()" class="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition">🔊 Speak</button>
-                        </div>
+    <!-- Mobile Header with Home Button -->
+    <header class="bg-white/90 backdrop-blur-sm shadow-sm sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <a href="/" class="text-2xl hover:opacity-70 transition">🏠</a>
+                    <div>
+                        <h1 class="text-lg font-bold text-indigo-700">🔐 Admin Panel</h1>
+                        <p class="text-[10px] text-gray-500 hidden sm:block">Language Island Management</p>
                     </div>
                 </div>
-
-                <!-- Pending Submissions -->
-                <div>
-                    <h3 class="font-bold text-gray-800 mb-4">📋 Pending Submissions</h3>
-                    <div id="pendingList" class="space-y-4">
-                        <p class="text-center text-gray-400 py-8">Loading...</p>
-                    </div>
-                </div>
-
-                <!-- Manage Island (Delete Sentences) -->
-                <div>
-                    <h3 class="font-bold text-gray-800 mb-4">🗑️ Manage Island Sentences</h3>
-                    <div id="islandList" class="space-y-3">
-                        <p class="text-center text-gray-400 py-8">Loading...</p>
-                    </div>
+                <div id="adminInfo" class="hidden flex items-center gap-2 sm:gap-4">
+                    <span id="adminName" class="font-bold text-indigo-600 text-sm"></span>
+                    <button onclick="logout()" class="bg-red-100 text-red-600 px-3 sm:px-4 py-2 rounded-xl font-semibold hover:bg-red-200 transition text-sm">Sign Out</button>
                 </div>
             </div>
         </div>
+    </header>
+
+    <div class="max-w-5xl mx-auto mobile-padding py-4 sm:py-8">
         
-        <div class="text-center text-sm text-gray-400">
-            <a href="/" class="hover:text-indigo-600">← Back to Island</a>
+        <!-- Login Section -->
+        <div id="loginSection" class="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-lg mb-6 sm:mb-8">
+            <div class="flex flex-col items-center">
+                <div id="g_id_onload" data-client_id="339348039848-9sc9fgbg3ap3879d8a385m961q7noi18.apps.googleusercontent.com" data-callback="handleAdminLogin"></div>
+                <div class="g_id_signin" data-type="standard"></div>
+                <a href="/" class="mt-6 text-sm text-indigo-600 hover:text-indigo-700">← Back to Island</a>
+            </div>
+        </div>
+
+        <!-- Admin Tools -->
+        <div id="adminTools" class="hidden space-y-6 sm:space-y-8">
+            
+            <!-- AI Generator -->
+            <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-amber-200">
+                <h3 class="font-bold text-amber-800 mb-3 sm:mb-4 text-sm sm:text-base">✨ AI Generator (with Phonetics)</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+                    <input id="aiTopic" type="text" placeholder="Topic (e.g. Fashion)" class="p-2 sm:p-3 rounded-xl border border-amber-200 outline-none text-sm">
+                    <input id="aiCategory" type="text" placeholder="Category name" class="p-2 sm:p-3 rounded-xl border border-amber-200 outline-none text-sm">
+                </div>
+                <button onclick="generateAI()" id="genBtn" class="mt-4 w-full bg-amber-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-amber-600 transition text-sm sm:text-base">Generate with Phonetics</button>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6">
+                <div class="bg-indigo-50 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-indigo-200">
+                    <h3 class="font-bold text-indigo-800 mb-2 sm:mb-3 text-xs sm:text-sm">📊 Island</h3>
+                    <div class="space-y-1 sm:space-y-2">
+                        <div class="flex justify-between text-xs sm:text-sm">
+                            <span class="text-gray-600">Total</span>
+                            <span id="totalApproved" class="font-bold text-indigo-700">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-amber-50 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-amber-200">
+                    <h3 class="font-bold text-amber-800 mb-2 sm:mb-3 text-xs sm:text-sm">⏳ Pending</h3>
+                    <div class="space-y-1 sm:space-y-2">
+                        <div class="flex justify-between text-xs sm:text-sm">
+                            <span class="text-gray-600">Review</span>
+                            <span id="totalPending" class="font-bold text-amber-700">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-green-50 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-green-200 col-span-2 sm:col-span-1">
+                    <h3 class="font-bold text-green-800 mb-2 sm:mb-3 text-xs sm:text-sm">🔊 TTS Test</h3>
+                    <div class="flex gap-2">
+                        <input id="testFr" type="text" placeholder="French" class="flex-grow p-2 rounded-xl border border-green-200 outline-none text-xs sm:text-sm">
+                        <button onclick="testSpeak()" class="bg-green-600 text-white px-3 sm:px-4 py-2 rounded-xl font-semibold hover:bg-green-700 transition text-sm">🔊</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Submissions -->
+            <div>
+                <h3 class="font-bold text-gray-800 mb-3 sm:mb-4 text-sm sm:text-base">📋 Pending Submissions</h3>
+                <div id="pendingList" class="space-y-3 sm:space-y-4">
+                    <p class="text-center text-gray-400 py-8 text-sm">Loading...</p>
+                </div>
+            </div>
+
+            <!-- Manage Island -->
+            <div>
+                <h3 class="font-bold text-gray-800 mb-3 sm:mb-4 text-sm sm:text-base">🗑️ Manage Island Sentences</h3>
+                <div id="islandList" class="space-y-2 sm:space-y-3">
+                    <p class="text-center text-gray-400 py-8 text-sm">Loading...</p>
+                </div>
+            </div>
+
+            <!-- Back Link -->
+            <div class="text-center pt-4">
+                <a href="/" class="text-sm text-indigo-600 hover:text-indigo-700">← Back to Island</a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-xs text-gray-400 mt-8 pb-4">
+            Powered by Groq AI & GitHub
         </div>
     </div>
 
@@ -131,32 +160,32 @@
                 var data = await res.json();
                 
                 if (data.length === 0) {
-                    list.innerHTML = '<p class="text-center text-gray-400 py-8">No pending submissions</p>';
+                    list.innerHTML = '<p class="text-center text-gray-400 py-8 text-sm">No pending submissions ✓</p>';
                     return;
                 }
                 
                 var html = '';
                 for (var i = 0; i < data.length; i++) {
                     var item = data[i];
-                    html += '<div class="bg-gray-50 p-5 rounded-2xl border">' +
-                        '<div class="flex justify-between items-start gap-4">' +
-                        '<div class="flex-grow space-y-2">' +
-                        '<span class="inline-block text-[10px] bg-amber-100 text-amber-700 px-2 py-1 rounded-md font-bold uppercase">' + (item.category || 'General') + '</span>' +
-                        '<p class="text-xs text-gray-500">From: ' + (item.submitterEmail || 'anonymous') + '</p>' +
-                        '<div class="grid grid-cols-2 gap-4 text-sm">' +
+                    html += '<div class="bg-white p-4 sm:p-5 rounded-xl border">' +
+                        '<div class="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-4">' +
+                        '<div class="flex-grow w-full">' +
+                        '<span class="inline-block text-[10px] bg-amber-100 text-amber-700 px-2 py-1 rounded-md font-bold uppercase mb-2">' + (item.category || 'General') + '</span>' +
+                        '<p class="text-xs text-gray-500 mb-2">From: ' + (item.submitterEmail || 'anonymous') + '</p>' +
+                        '<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">' +
                         '<div><span class="text-gray-400 text-xs">বাংলা:</span><p class="text-gray-800">' + (item.bn || '') + '</p></div>' +
-                        '<div><span class="text-gray-400 text-xs">বাংলা উচ্চারণ:</span><p class="text-gray-600 italic">' + (item.bn_phonetic || '-') + '</p></div>' +
-                        '<div><span class="text-gray-400 text-xs">Français:</span><p class="text-lg font-bold text-indigo-700">' + (item.fr || '') + '</p></div>' +
-                        '<div><span class="text-gray-400 text-xs">Phonétique:</span><p class="text-gray-600 italic">' + (item.fr_phonetic || '-') + '</p></div>' +
+                        '<div><span class="text-gray-400 text-xs">উচ্চারণ:</span><p class="text-gray-600 italic text-xs">' + (item.bn_phonetic || '-') + '</p></div>' +
+                        '<div><span class="text-gray-400 text-xs">Français:</span><p class="text-base sm:text-lg font-bold text-indigo-700">' + (item.fr || '') + '</p></div>' +
+                        '<div><span class="text-gray-400 text-xs">Phonétique:</span><p class="text-gray-600 italic text-xs">' + (item.fr_phonetic || '-') + '</p></div>' +
                         '</div>' +
-                        '<p class="text-xs text-gray-400 mt-2">' + (item.submittedAt || '') + '</p></div>' +
-                        '<div class="flex flex-col gap-2">' +
-                        '<button onclick="approve(\'' + item.id + '\')" class="bg-green-500 text-white px-4 py-2 rounded-xl font-semibold hover:bg-green-600 transition text-sm">✓ Approve</button>' +
-                        '<button onclick="reject(\'' + item.id + '\')" class="bg-red-100 text-red-600 px-4 py-2 rounded-xl font-semibold hover:bg-red-200 transition text-sm">✗ Reject</button></div></div>';
+                        '<p class="text-[10px] sm:text-xs text-gray-400 mt-2">' + (item.submittedAt || '') + '</p></div>' +
+                        '<div class="flex flex-row sm:flex-col gap-2 w-full sm:w-auto">' +
+                        '<button onclick="approve(\'' + item.id + '\')" class="flex-1 bg-green-500 text-white px-3 sm:px-4 py-2 rounded-xl font-semibold hover:bg-green-600 transition text-xs sm:text-sm">✓ Approve</button>' +
+                        '<button onclick="reject(\'' + item.id + '\')" class="flex-1 bg-red-100 text-red-600 px-3 sm:px-4 py-2 rounded-xl font-semibold hover:bg-red-200 transition text-xs sm:text-sm">✗ Reject</button></div></div>';
                 }
                 list.innerHTML = html;
             } catch(e) {
-                list.innerHTML = '<p class="text-center text-red-400 py-8">Failed to load pending submissions</p>';
+                list.innerHTML = '<p class="text-center text-red-400 py-8 text-sm">Failed to load</p>';
             }
         }
 
@@ -167,24 +196,24 @@
                 var data = await res.json();
                 
                 if (data.length === 0) {
-                    list.innerHTML = '<p class="text-center text-gray-400 py-8">No sentences in island</p>';
+                    list.innerHTML = '<p class="text-center text-gray-400 py-8 text-sm">No sentences in island</p>';
                     return;
                 }
                 
                 var html = '';
                 for (var i = 0; i < data.length; i++) {
                     var item = data[i];
-                    html += '<div class="bg-white p-4 rounded-xl border flex justify-between items-center gap-4 hover:bg-gray-50 transition">' +
-                        '<div class="flex-grow min-w-0">' +
+                    html += '<div class="bg-white p-3 sm:p-4 rounded-xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 hover:bg-gray-50 transition">' +
+                        '<div class="flex-grow w-full min-w-0">' +
                         '<span class="inline-block text-[10px] bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md font-bold uppercase mb-1">' + (item.category || 'General') + '</span>' +
-                        '<p class="text-sm text-gray-600 truncate">' + (item.bn || '') + '</p>' +
-                        '<p class="text-lg font-bold text-indigo-700 truncate">' + (item.fr || '') + '</p>' +
+                        '<p class="text-xs sm:text-sm text-gray-600 truncate">' + (item.bn || '') + '</p>' +
+                        '<p class="text-base sm:text-lg font-bold text-indigo-700 truncate">' + (item.fr || '') + '</p>' +
                         '</div>' +
-                        '<button onclick="deleteSentence(\'' + (item.id || item.bn) + '\')" class="bg-red-100 text-red-600 px-4 py-2 rounded-xl font-semibold hover:bg-red-200 transition text-sm flex-shrink-0">🗑️ Delete</button></div>';
+                        '<button onclick="deleteSentence(\'' + (item.id || item.bn) + '\')" class="w-full sm:w-auto bg-red-100 text-red-600 px-3 sm:px-4 py-2 rounded-xl font-semibold hover:bg-red-200 transition text-xs sm:text-sm">🗑️ Delete</button></div>';
                 }
                 list.innerHTML = html;
             } catch(e) {
-                list.innerHTML = '<p class="text-center text-red-400 py-8">Failed to load island</p>';
+                list.innerHTML = '<p class="text-center text-red-400 py-8 text-sm">Failed to load</p>';
             }
         }
 
@@ -226,7 +255,7 @@
         }
 
         async function deleteSentence(id) {
-            if (!confirm('Delete this sentence from island? This cannot be undone.')) return;
+            if (!confirm('Delete this sentence? This cannot be undone.')) return;
             try {
                 var res = await fetch('/api/admin/delete', {
                     method: 'POST',
@@ -266,7 +295,7 @@
                 });
                 var data = await res.json();
                 if (data.success) {
-                    alert('Successfully added!\n\n' + 
+                    alert('Added!\n\n' + 
                         '🇫🇷 ' + data.sentence.fr + '\n' +
                         '🔤 ' + (data.sentence.fr_phonetic || 'N/A') + '\n' +
                         '🇧🇩 ' + data.sentence.bn + '\n' +
@@ -280,7 +309,7 @@
                 }
             } catch(e) { alert('Failed to generate'); }
             btn.disabled = false;
-            btn.textContent = 'Generate with Phonetics';
+            btn.textText = 'Generate with Phonetics';
         }
 
         function testSpeak() {
