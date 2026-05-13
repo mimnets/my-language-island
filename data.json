@@ -16,5 +16,527 @@
     "category": "Bonjour, comment allez-vous?",
     "date": "2026-05-13",
     "id": "1778677209956"
+  },
+  {
+    "bn": "হ্যালো, আপনি কেমন আছেন?",
+    "fr": "Bonjour, comment allez-vous?",
+    "fr_phonetic": "বোঁ-জোর, কোঁ-মাঁ অলে-ভু?",
+    "bn_phonetic": "হ্যালো, আপনি কেমন আছেন?",
+    "category": "Greetings",
+    "date": "2025-05-13",
+    "id": "177867935050645gfb0i"
+  },
+  {
+    "bn": "আমার নাম মনিরুল ইসলাম",
+    "fr": "Je m'appelle Monirul Islam",
+    "fr_phonetic": "জ্য মাপেল মনিরুল ইসলাম",
+    "bn_phonetic": "আমার নাম মনিরুল ইসলাম",
+    "category": "Introduction",
+    "date": "2025-05-13",
+    "id": "1778679350506cee35nn"
+  },
+  {
+    "bn": "আমি বাংলাদেশ থেকে এসেছি",
+    "fr": "Je viens du Bangladesh",
+    "fr_phonetic": "জ্য ভিয়াঁ দু বাংলাদেশ",
+    "bn_phonetic": "আমি বাংলাদেশ থেকে এসেছি",
+    "category": "Introduction",
+    "date": "2025-05-13",
+    "id": "1778679350506aovz0c9"
+  },
+  {
+    "bn": "আমি পোশাক শিল্পে কাজ করি",
+    "fr": "Je travaille dans l'industrie du vêtement",
+    "fr_phonetic": "জ্য ত্রাভাই ইয় দাঁ লাঁদুস্ত্রি দু ভেত্মঁ",
+    "bn_phonetic": "আমি পোশাক শিল্পে কাজ করি",
+    "category": "Apparel",
+    "date": "2025-05-13",
+    "id": "1778679350506vq77dmb"
+  },
+  {
+    "bn": "এই জামাটা কত টাকার?",
+    "fr": "Combien coûte cette chemise?",
+    "fr_phonetic": "কঁবিয়াঁ কুট স্যত শ্যমিজ?",
+    "bn_phonetic": "এই জামাটা কত টাকার?",
+    "category": "Shopping",
+    "date": "2025-05-13",
+    "id": "1778679350506m7pwlze"
+  },
+  {
+    "bn": "আমার কি সাইজ আছে?",
+    "fr": "Avez-vous ma taille?",
+    "fr_phonetic": "আভে-ভু মা তাইই?",
+    "bn_phonetic": "আমার কি সাইজ আছে?",
+    "category": "Shopping",
+    "date": "2025-05-13",
+    "id": "1778679350506167qspy"
+  },
+  {
+    "bn": "আমার একটি বড় সাইজ দরকার",
+    "fr": "J'ai besoin d'une grande taille",
+    "fr_phonetic": "জ্য বেজোঁ দ্যুন গ্রঁদ তাইই",
+    "bn_phonetic": "আমার একটি বড় সাইজ দরকার",
+    "category": "Shopping",
+    "date": "2025-05-13",
+    "id": "1778679350506mzrglub"
+  },
+  {
+    "bn": "কাপড়ের গুনগত মান কেমন?",
+    "fr": "Quelle est la qualité du tissu?",
+    "fr_phonetic": "কেল এ লা কালিতে দু তিস্যু?",
+    "bn_phonetic": "কাপড়ের গুনগত মান কেমন?",
+    "category": "Quality",
+    "date": "2025-05-13",
+    "id": "1778679350506uspqq82"
+  },
+  {
+    "bn": "এই কাপড় মেশিনে ধোয়া যায়?",
+    "fr": "Ce tissu est-il lavable en machine?",
+    "fr_phonetic": "স্য তিস্যু এ-তিল লাভাব্ল অঁ মাশিন?",
+    "bn_phonetic": "এই কাপড় মেশিনে ধোয়া যায়?",
+    "category": "Quality",
+    "date": "2025-05-13",
+    "id": "1778679350506tdig4la"
+  },
+  {
+    "bn": "রং কি ফেড়াবে না?",
+    "fr": "La couleur va-t-elle déteindre?",
+    "fr_phonetic": "লা কুলেভ্য ভা-তেল দেতাঁদ্র?",
+    "bn_phonetic": "রং কি ফেড়াবে না?",
+    "category": "Quality",
+    "date": "2025-05-13",
+    "id": "17786793505068jp57q7"
+  },
+  {
+    "bn": "এই পণ্য কি বাংলাদেশে তৈরি?",
+    "fr": "Ce produit est-il fabriqué au Bangladesh?",
+    "fr_phonetic": "স্য প্রোড্যুই এ-তিল ফাব্রিকে ও বাংলাদেশ?",
+    "bn_phonetic": "এই পণ্য কি বাংলাদেশে তৈরি?",
+    "category": "Manufacturing",
+    "date": "2025-05-13",
+    "id": "17786793505061m42iy0"
+  },
+  {
+    "bn": "ব্যাচ প্রস্তুত করতে কতদিন লাগবে?",
+    "fr": "Combien de temps faut-il pour préparer le lot?",
+    "fr_phonetic": "কঁবিয়াঁ দ্য তঁ ফো-তিল পুর প্রেপারে ল্য লো?",
+    "bn_phonetic": "ব্যাচ প্রস্তুত করতে কতদিন লাগবে?",
+    "category": "Manufacturing",
+    "date": "2025-05-13",
+    "id": "1778679350507lsnmou3"
+  },
+  {
+    "bn": "প্রতি শার্টের দাম কত?",
+    "fr": "Quel est le prix par chemise?",
+    "fr_phonetic": "কেল এ ল্য প্রি পার শ্যমিজ?",
+    "bn_phonetic": "প্রতি শার্টের দাম কত?",
+    "category": "Pricing",
+    "date": "2025-05-13",
+    "id": "1778679350507i7j8851"
+  },
+  {
+    "bn": "বড় অর্ডারে ডিসকাউন্ট আছে?",
+    "fr": "Y a-t-il un rabais pour les commandes importantes?",
+    "fr_phonetic": "ইয়া-তিল অঁ রাবে পুর ল্য কমঁদ জিম্পোর্টঁত?",
+    "bn_phonetic": "বড় অর্ডারে ডিসকাউন্ট আছে?",
+    "category": "Business",
+    "date": "2025-05-13",
+    "id": "1778679350507e19huop"
+  },
+  {
+    "bn": "ডেলিভারি চার্জ কত?",
+    "fr": "Quel est le coût de livraison?",
+    "fr_phonetic": "কেল এ ল্য কু দ্য লিভ্রেজঁ?",
+    "bn_phonetic": "ডেলিভারি চার্জ কত?",
+    "category": "Shipping",
+    "date": "2025-05-13",
+    "id": "17786793505074qdpswx"
+  },
+  {
+    "bn": "কখন ডেলিভারি পাবো?",
+    "fr": "Quand recevrai-je la livraison?",
+    "fr_phonetic": "কঁ রেসেভ্রে-জ্য লা লিভ্রেজঁ?",
+    "bn_phonetic": "কখন ডেলিভারি পাবো?",
+    "category": "Shipping",
+    "date": "2025-05-13",
+    "id": "1778679350507wfy5yb6"
+  },
+  {
+    "bn": "নমুনা দেখতে চাই",
+    "fr": "Je voudrais voir un échantillon",
+    "fr_phonetic": "জ্য ভুদ্রে ভোয়ার অঁ এশঁতিজঁ",
+    "bn_phonetic": "নমুনা দেখতে চাই",
+    "category": "Samples",
+    "date": "2025-05-13",
+    "id": "1778679350507os1ktha"
+  },
+  {
+    "bn": "দয়া করে প্রাইস লিস্ট দিন",
+    "fr": "Pourriez-vous me donner la liste des prix?",
+    "fr_phonetic": "পুরিয়ে0ভু ম্য দোনে লা লিস্ত দ্য প্রি?",
+    "bn_phonetic": "দয়া করে প্রাইস লিস্ট দিন",
+    "category": "Business",
+    "date": "2025-05-13",
+    "id": "1778679350507jzut7b5"
+  },
+  {
+    "bn": "আপনার কার্ড গ্রহণ করা হয়?",
+    "fr": "Acceptez-vous les cartes de crédit?",
+    "fr_phonetic": "আক্সেপ্তে-ভু ল্য কার্ত দ্য ক্রেদি?",
+    "bn_phonetic": "আপনার কার্ড গ্রহণ করা হয়?",
+    "category": "Payment",
+    "date": "2025-05-13",
+    "id": "17786793505076nqp912"
+  },
+  {
+    "bn": "ইনভয়েস দরকার",
+    "fr": "J'ai besoin d'une facture",
+    "fr_phonetic": "জ্য বেজোঁ দ্যুন ফাক্যুউর",
+    "bn_phonetic": "ইনভয়েস দরকার",
+    "category": "Payment",
+    "date": "2025-05-13",
+    "id": "1778679350507s7j7x12"
+  },
+  {
+    "bn": "ধন্যবাদ",
+    "fr": "Merci",
+    "fr_phonetic": "মের্সি",
+    "bn_phonetic": "ধন্যবাদ",
+    "category": "Polite",
+    "date": "2025-05-13",
+    "id": "1778679350507a0o0itw"
+  },
+  {
+    "bn": "দুঃখিত",
+    "fr": "Désolé",
+    "fr_phonetic": "দেজোলে",
+    "bn_phonetic": "দুঃখিত",
+    "category": "Polite",
+    "date": "2025-05-13",
+    "id": "1778679350507pqgav77"
+  },
+  {
+    "bn": "দয়া করে",
+    "fr": "S'il vous plaît",
+    "fr_phonetic": "সিল ভু প্লে",
+    "bn_phonetic": "দয়া করে",
+    "category": "Polite",
+    "date": "2025-05-13",
+    "id": "1778679350507fukoxbt"
+  },
+  {
+    "bn": "আমি বুঝতে পারছি না",
+    "fr": "Je ne comprends pas",
+    "fr_phonetic": "জ্য ন্য কঁপ্রঁ পা",
+    "bn_phonetic": "আমি বুঝতে পারছি না",
+    "category": "Communication",
+    "date": "2025-05-13",
+    "id": "17786793505073004u4l"
+  },
+  {
+    "bn": "দয়া করে আস্তে বলুন",
+    "fr": "Parlez lentement, s'il vous plaît",
+    "fr_phonetic": "পারলে লঁত্মঁ, সিল ভু প্লে",
+    "bn_phonetic": "দয়া করে আস্তে বলুন",
+    "category": "Communication",
+    "date": "2025-05-13",
+    "id": "1778679350507pvv9wui"
+  },
+  {
+    "bn": "আপনি কি ইংরেজি বলতে পারেন?",
+    "fr": "Parlez-vous anglais?",
+    "fr_phonetic": "পারলে-ভু অঁগ্লে?",
+    "bn_phonetic": "আপনি কি ইংরেজি বলতে পারেন?",
+    "category": "Communication",
+    "date": "2025-05-13",
+    "id": "1778679350507ovlucup"
+  },
+  {
+    "bn": "এটি লিখে দিন",
+    "fr": "Pouvez-vous l'écrire?",
+    "fr_phonetic": "পুভে-ভু লেক্রির?",
+    "bn_phonetic": "এটি লিখে দিন",
+    "category": "Communication",
+    "date": "2025-05-13",
+    "id": "17786793505077tg996u"
+  },
+  {
+    "bn": "আমার ফরাসি ভালো না",
+    "fr": "Mon français n'est pas bon",
+    "fr_phonetic": "মঁ ফ্রঁসে নে পা বঁ",
+    "bn_phonetic": "আমার ফরাসি ভালো না",
+    "category": "Communication",
+    "date": "2025-05-13",
+    "id": "1778679350507cjjw7yc"
+  },
+  {
+    "bn": "আমি শিখছি",
+    "fr": "Je suis en train d'apprendre",
+    "fr_phonetic": "জ্য স্যুই জঁ ত্রঁ দাপ্রঁদ্র",
+    "bn_phonetic": "আমি শিখছি",
+    "category": "Learning",
+    "date": "2025-05-13",
+    "id": "1778679350507vp96bes"
+  },
+  {
+    "bn": "আপনাকে আবার দেখে ভালো লাগলো",
+    "fr": "Ravi de vous revoir",
+    "fr_phonetic": "রাভি দ্য ভু রেভোয়ার",
+    "bn_phonetic": "আপনাকে আবার দেখে ভালো লাগলো",
+    "category": "Greetings",
+    "date": "2025-05-13",
+    "id": "1778679350507h4wi3fw"
+  },
+  {
+    "bn": "বিদায়",
+    "fr": "Au revoir",
+    "fr_phonetic": "ও রেভোয়ার",
+    "bn_phonetic": "বিদায়",
+    "category": "Greetings",
+    "date": "2025-05-13",
+    "id": "17786793505073fu141v"
+  },
+  {
+    "bn": "কাল দেখা হবে",
+    "fr": "À demain",
+    "fr_phonetic": "আ দেমাঁ",
+    "bn_phonetic": "কাল দেখা হবে",
+    "category": "Greetings",
+    "date": "2025-05-13",
+    "id": "1778679350507wwbwoco"
+  },
+  {
+    "bn": "এই রংটি কি আছে?",
+    "fr": "Avez-vous cette couleur?",
+    "fr_phonetic": "আভে-ভু স্যত কুলেভ্য?",
+    "bn_phonetic": "এই রংটি কি আছে?",
+    "category": "Color",
+    "date": "2025-05-13",
+    "id": "17786793505075mcicen"
+  },
+  {
+    "bn": "নীল রঙের আছে?",
+    "fr": "Avez-vous du bleu?",
+    "fr_phonetic": "আভে-ভু দু ব্ল্য?",
+    "bn_phonetic": "নীল রঙের আছে?",
+    "category": "Color",
+    "date": "2025-05-13",
+    "id": "1778679350507o21p05x"
+  },
+  {
+    "bn": "লাল রঙ পছন্দ করি",
+    "fr": "Je préfère la couleur rouge",
+    "fr_phonetic": "জ্য প্রেফের লা কুলেভ্য রুঞ্জ",
+    "bn_phonetic": "লাল রঙ পছন্দ করি",
+    "category": "Color",
+    "date": "2025-05-13",
+    "id": "1778679350507r3wnkji"
+  },
+  {
+    "bn": "কালার চার্ট দেখাতে পারেন?",
+    "fr": "Pouvez-vous me montrer la charte des couleurs?",
+    "fr_phonetic": "পুভে-ভু ম্য মঁত্রে লা শার্ত দ্য কুলেভ্য?",
+    "bn_phonetic": "কালার চার্ট দেখাতে পারেন?",
+    "category": "Color",
+    "date": "2025-05-13",
+    "id": "1778679350507ueboy2c"
+  },
+  {
+    "bn": "ফ্যাব্রিক স্যাম্পল আছে?",
+    "fr": "Avez-vous un échantillon de tissu?",
+    "fr_phonetic": "আভে-ভু অঁ এশঁতিজঁ দ্য তিস্যু?",
+    "bn_phonetic": "ফ্যাব্রিক স্যাম্পল আছে?",
+    "category": "Fabric",
+    "date": "2025-05-13",
+    "id": "1778679350507r6ixb49"
+  },
+  {
+    "bn": "কটন ফ্যাব্রিক চাই",
+    "fr": "Je veux du tissu en coton",
+    "fr_phonetic": "জ্য ভ্য দু তিস্যু অঁ কোটঁ",
+    "bn_phonetic": "কটন ফ্যাব্রিক চাই",
+    "category": "Fabric",
+    "date": "2025-05-13",
+    "id": "177867935050707ugosa"
+  },
+  {
+    "bn": "পলিয়েস্টার ব্যবহার করা হয়েছে?",
+    "fr": "Est-ce en polyester?",
+    "fr_phonetic": "এ-স্য অঁ পলিয়েস্তের?",
+    "bn_phonetic": "পলিয়েস্টার ব্যবহার করা হয়েছে?",
+    "category": "Fabric",
+    "date": "2025-05-13",
+    "id": "1778679350507as7prul"
+  },
+  {
+    "bn": "এই কাপড় নরম",
+    "fr": "Ce tissu est doux",
+    "fr_phonetic": "স্য তিস্যু এ দু",
+    "bn_phonetic": "এই কাপড় নরম",
+    "category": "Quality",
+    "date": "2025-05-13",
+    "id": "1778679350507dg08p8h"
+  },
+  {
+    "bn": "ওয়াশিং নির্দেশিকা আছে?",
+    "fr": "Y a-t-il des instructions de lavage?",
+    "fr_phonetic": "ইয়া-তিল দেজ ইঁস্ত্রুক্সিওঁ দ্য লাভাজ?",
+    "bn_phonetic": "ওয়াশিং নির্দেশিকা আছে?",
+    "category": "Care",
+    "date": "2025-05-13",
+    "id": "1778679350507qawtnqe"
+  },
+  {
+    "bn": "আয়রন করা যায়?",
+    "fr": "Puis-je le repasser?",
+    "fr_phonetic": "প্যুই-জ্য ল্য রেপাসে?",
+    "bn_phonetic": "আয়রন করা যায়?",
+    "category": "Care",
+    "date": "2025-05-13",
+    "id": "1778679350507cbcl72w"
+  },
+  {
+    "bn": "কোন সাইজ উপলব্ধ?",
+    "fr": "Quelles tailles sont disponibles?",
+    "fr_phonetic": "কেল তাইই সঁ দিস্পোনিব্ল?",
+    "bn_phonetic": "কোন সাইজ উপলব্ধ?",
+    "category": "Sizing",
+    "date": "2025-05-13",
+    "id": "1778679350507tl9ekl1"
+  },
+  {
+    "bn": "এস, এম, এল সাইজ আছে",
+    "fr": "Les tailles S, M, L sont disponibles",
+    "fr_phonetic": "লে তাইই এস, এম, এল সঁ দিস্পোনিব্ল",
+    "bn_phonetic": "এস, এম, এল সাইজ আছে",
+    "category": "Sizing",
+    "date": "2025-05-13",
+    "id": "17786793505075ivqfrh"
+  },
+  {
+    "bn": "সাইজ চার্ট দেখাতে পারেন?",
+    "fr": "Pouvez-vous me montrer le tableau des tailles?",
+    "fr_phonetic": "পুভে-ভু ম্য মঁত্রে ল্য তাবলো দ্য তাইই?",
+    "bn_phonetic": "সাইজ চার্ট দেখাতে পারেন?",
+    "category": "Sizing",
+    "date": "2025-05-13",
+    "id": "1778679350507azkaybf"
+  },
+  {
+    "bn": "এইটা ট্রাই করতে পারি?",
+    "fr": "Puis-je essayer ceci?",
+    "fr_phonetic": "প্যুই-জ্য এসেয়ে সেসি?",
+    "bn_phonetic": "এইটা ট্রাই করতে পারি?",
+    "category": "Shopping",
+    "date": "2025-05-13",
+    "id": "1778679350507ubuixmp"
+  },
+  {
+    "bn": "চেঞ্জিং রুম কোথায়?",
+    "fr": "Où est la cabine d'essayage?",
+    "fr_phonetic": "উ এ লা কাবিন দেসেয়াজ?",
+    "bn_phonetic": "চেঞ্জিং রুম কোথায়?",
+    "category": "Shopping",
+    "date": "2025-05-13",
+    "id": "177867935050728eqnjz"
+  },
+  {
+    "bn": "এটাই নেবো",
+    "fr": "Je vais prendre celui-ci",
+    "fr_phonetic": "জ্য ভে প্রঁদ্র সেল্যুই-সি",
+    "bn_phonetic": "এটাই নেবো",
+    "category": "Shopping",
+    "date": "2025-05-13",
+    "id": "1778679350507gyen6a9"
+  },
+  {
+    "bn": "না ধন্যবাদ, শুধু দেখছি",
+    "fr": "Non merci, je regarde juste",
+    "fr_phonetic": "নঁ মের্সি, জ্য রেগার্দ জ্যুস্ত",
+    "bn_phonetic": "না ধন্যবাদ, শুধু দেখছি",
+    "category": "Shopping",
+    "date": "2025-05-13",
+    "id": "1778679350507bde1ujl"
+  },
+  {
+    "bn": "দাম কমাতে পারেন?",
+    "fr": "Pouvez-vous baisser le prix?",
+    "fr_phonetic": "পুভে-ভু বেসে ল্য প্রি?",
+    "bn_phonetic": "দাম কমাতে পারেন?",
+    "category": "Negotiation",
+    "date": "2025-05-13",
+    "id": "1778679350507d87slas"
+  },
+  {
+    "bn": "অন্য দোকানে সস্তা",
+    "fr": "C'est moins cher dans un autre magasin",
+    "fr_phonetic": "সে মোঁ শের দাঁজ অঁ অওত্র মাগাজাঁ",
+    "bn_phonetic": "অন্য দোকানে সস্তা",
+    "category": "Negotiation",
+    "date": "2025-05-13",
+    "id": "1778679350507zdrihlt"
+  },
+  {
+    "bn": "এটাই আমার বাজেট",
+    "fr": "C'est mon budget",
+    "fr_phonetic": "সে মঁ ব্যুজে",
+    "bn_phonetic": "এটাই আমার বাজেট",
+    "category": "Negotiation",
+    "date": "2025-05-13",
+    "id": "1778679350507a4fav84"
+  },
+  {
+    "bn": "রিফান্ড পলিসি কি?",
+    "fr": "Quelle est votre politique de remboursement?",
+    "fr_phonetic": "কেল এ ভোত্র পোলিতিস্ক দ্য রঁবুর্স্মঁ?",
+    "bn_phonetic": "রিফান্ড পলিসি কি?",
+    "category": "Policies",
+    "date": "2025-05-13",
+    "id": "1778679350507fjmizhe"
+  },
+  {
+    "bn": "বিনিময় করা যায়?",
+    "fr": "Puis-je l'échanger?",
+    "fr_phonetic": "প্যুই-জ্য লেশঁজে?",
+    "bn_phonetic": "বিনিময় করা যায়?",
+    "category": "Policies",
+    "date": "2025-05-13",
+    "id": "177867935050788fkpwn"
+  },
+  {
+    "bn": "ওয়ারেন্টি আছে?",
+    "fr": "Y a-t-il une garantie?",
+    "fr_phonetic": "ইয়া-তিল ইউন গারঁতি?",
+    "bn_phonetic": "ওয়ারেন্টি আছে?",
+    "category": "Warranty",
+    "date": "2025-05-13",
+    "id": "1778679350507f30recw"
+  },
+  {
+    "bn": "ব্যাগে প্যাক করা হবে?",
+    "fr": "Sera-t-il emballé dans un sac?",
+    "fr_phonetic": "সেরা-তিল অঁবালে দাঁজ অঁ সাক?",
+    "bn_phonetic": "ব্যাগে প্যাক করা হবে?",
+    "category": "Packaging",
+    "date": "2025-05-13",
+    "id": "17786793505072be85hk"
+  },
+  {
+    "bn": "উপহারের জন্য মোড়ক করা যায়?",
+    "fr": "Pouvez-vous l'emballer pour un cadeau?",
+    "fr_phonetic": "পুভে-ভু লঁবালে পুর অঁ কাদো?",
+    "bn_phonetic": "উপহারের জন্য মোড়ক করা যায়?",
+    "category": "Packaging",
+    "date": "2025-05-13",
+    "id": "1778679350507f30y0q4"
+  },
+  {
+    "bn": "রিসিপ্ট দেবেন",
+    "fr": "Donnez-moi un reçu",
+    "fr_phonetic": "দোনে-মোয়া অঁ রেস্য",
+    "bn_phonetic": "রিসিপ্ট দেবেন",
+    "category": "Receipt",
+    "date": "2025-05-13",
+    "id": "177867935050701g2zy8"
   }
 ]
