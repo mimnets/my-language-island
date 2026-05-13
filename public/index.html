@@ -9,11 +9,6 @@
         * { box-sizing: border-box; }
         .tab-active { border-bottom: 3px solid #6366f1; color: #6366f1; }
         .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px -5px rgba(0,0,0,0.1); }
-        .flashcard { perspective: 1000px; }
-        .flashcard-inner { transition: transform 0.6s; transform-style: preserve-3d; }
-        .flashcard.revealed .flashcard-inner { transform: rotateY(180deg); }
-        .flashcard-front, .flashcard-back { backface-visibility: hidden; }
-        .flashcard-back { transform: rotateY(180deg); position: absolute; inset: 0; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-indigo-50 min-h-screen">
@@ -72,18 +67,11 @@
             </div>
 
             <div id="flashcardContainer" class="hidden">
-                <div class="flashcard cursor-pointer" onclick="revealCard()">
-                    <div class="flashcard-inner relative bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-3xl p-8 min-h-[280px] flex flex-col justify-center items-center shadow-2xl">
-                        <div class="flashcard-front text-center w-full">
-                            <p class="text-indigo-200 text-xs uppercase tracking-widest mb-4">Recall French</p>
-                            <p id="cardBengali" class="text-white text-2xl font-medium mb-6">বাংলা বাক্য</p>
-                            <p class="text-indigo-300 text-sm">Tap to reveal French</p>
-                        </div>
-                        <div class="flashcard-back text-center w-full">
-                            <p class="text-indigo-200 text-xs uppercase tracking-widest mb-4">French</p>
-                            <p id="cardFrench" class="text-white text-3xl font-bold">French sentence</p>
-                        </div>
-                    </div>
+                <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-3xl p-8 min-h-[280px] flex flex-col justify-center items-center shadow-2xl cursor-pointer" onclick="revealCard()">
+                    <p class="text-indigo-200 text-xs uppercase tracking-widest mb-4">Recall French</p>
+                    <p id="cardBengali" class="text-white text-2xl font-medium mb-6">বাংলা বাক্য</p>
+                    <p id="cardFrench" class="text-white text-3xl font-bold hidden">French</p>
+                    <p id="tapHint" class="text-indigo-300 text-sm mt-4">Tap to reveal French</p>
                 </div>
 
                 <div class="flex justify-center gap-4 mt-8">
@@ -138,7 +126,7 @@
             <div class="bg-white p-8 rounded-2xl shadow-sm border space-y-6">
                 <div>
                     <h2 class="text-2xl font-bold text-indigo-700 mb-4">🏝️ Language Island Method</h2>
-                    <p class="text-gray-600 leading-relaxed">Instead of memorizing entire dictionaries, build your own "island" of essential sentences for your daily work life.</p>
+                    <p class="text-gray-600 leading-relaxed">Instead of memorizing entire dictionaries, build your own island of essential sentences for your daily work life.</p>
                 </div>
                 <div class="bg-indigo-50 p-6 rounded-xl">
                     <h3 class="font-bold text-indigo-800 mb-3">🎯 How to Practice (Shadowing)</h3>
@@ -173,16 +161,17 @@
     </div>
 
     <script>
-        let allData = [];
-        let currentIndex = 0;
-        let isAdmin = false;
-        let searchTimeout = null;
+        var allData = [];
+        var currentIndex = 0;
+        var isAdmin = false;
+        var searchTimeout = null;
+        var cardRevealed = false;
 
         document.addEventListener('DOMContentLoaded', loadIsland);
 
         async function loadIsland() {
             try {
-                const res = await fetch('/api/island');
+                var res = await fetch('/api/island');
                 if (!res.ok) throw new Error('Failed to load');
                 allData = await res.json();
                 document.getElementById('totalCount').textContent = allData.length;
@@ -195,36 +184,43 @@
         }
 
         function switchTab(tab) {
-            document.querySelectorAll('nav button').forEach(btn => {
-                btn.classList.remove('tab-active');
-                btn.classList.add('text-gray-500');
-            });
+            var buttons = document.querySelectorAll('nav button');
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove('tab-active');
+                buttons[i].classList.add('text-gray-500');
+            }
             document.getElementById('tab-' + tab).classList.add('tab-active');
             document.getElementById('tab-' + tab).classList.remove('text-gray-500');
-            document.querySelectorAll('.tab-content').forEach(sec => sec.classList.add('hidden'));
+            var sections = document.querySelectorAll('.tab-content');
+            for (var j = 0; j < sections.length; j++) {
+                sections[j].classList.add('hidden');
+            }
             document.getElementById('section-' + tab).classList.remove('hidden');
             if (tab === 'recall') initRecall();
         }
 
         function renderList(items) {
-            const list = document.getElementById('sentenceList');
+            var list = document.getElementById('sentenceList');
             if (items.length === 0) {
                 list.innerHTML = '<div class="text-center py-12 text-gray-400"><div class="text-4xl mb-2">🏝️</div><p>No sentences found</p></div>';
                 return;
             }
-            list.innerHTML = [...items].reverse().map((item) => {
-                const bn = escapeHtml(item.bn || '');
-                const fr = escapeHtml(item.fr || '');
-                const cat = escapeHtml(item.category || 'General');
-                return '<div class="card-hover p-5 bg-white rounded-2xl shadow-sm border border-gray-100 transition-all">' +
+            var html = '';
+            for (var k = items.length - 1; k >= 0; k--) {
+                var item = items[k];
+                var bn = escapeHtml(item.bn || '');
+                var fr = escapeHtml(item.fr || '');
+                var cat = escapeHtml(item.category || 'General');
+                html += '<div class="card-hover p-5 bg-white rounded-2xl shadow-sm border border-gray-100 transition-all">' +
                     '<div class="flex justify-between items-start gap-4">' +
                     '<div class="flex-grow">' +
                     '<span class="inline-block text-[10px] bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md font-bold uppercase mb-2">' + cat + '</span>' +
                     '<p class="text-gray-500 text-sm mb-1">' + bn + '</p>' +
                     '<p class="text-xl font-bold text-indigo-700">' + fr + '</p></div>' +
-                    '<button onclick="speak(\'' + escapeAttr(fr) + '\')" class="flex-shrink-0 bg-indigo-50 p-3 rounded-full hover:bg-indigo-600 hover:text-white transition-colors text-lg" title="Listen">🔊</button></div>' +
+                    '<button onclick="speak(\'' + fr.replace(/'/g, "\\'") + '\')" class="flex-shrink-0 bg-indigo-50 p-3 rounded-full hover:bg-indigo-600 hover:text-white transition-colors text-lg" title="Listen">🔊</button></div>' +
                     (item.date ? '<p class="text-xs text-gray-400 mt-2">' + item.date + '</p>' : '') + '</div>';
-            }).join('');
+            }
+            list.innerHTML = html;
         }
 
         function renderEmpty() {
@@ -232,52 +228,86 @@
         }
 
         function updateCategoryPills() {
-            const cats = [...new Set(allData.map(item => item.category).filter(Boolean))];
-            const container = document.getElementById('categoryPills');
-            let html = '<button onclick="filterByCategory(\'all\')" class="category-pill px-3 py-1 rounded-full text-xs font-medium bg-indigo-600 text-white whitespace-nowrap" data-cat="all">All</button>';
-            cats.forEach(cat => {
-                html += '<button onclick="filterByCategory(\'' + escapeAttr(cat) + '\')" class="category-pill px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-700 whitespace-nowrap" data-cat="' + escapeAttr(cat) + '">' + escapeHtml(cat) + '</button>';
-            });
+            var cats = [];
+            for (var i = 0; i < allData.length; i++) {
+                var cat = allData[i].category;
+                if (cat && cats.indexOf(cat) === -1) cats.push(cat);
+            }
+            var container = document.getElementById('categoryPills');
+            var html = '<button onclick="filterByCategory(\'all\')" class="category-pill px-3 py-1 rounded-full text-xs font-medium bg-indigo-600 text-white whitespace-nowrap">All</button>';
+            for (var j = 0; j < cats.length; j++) {
+                var safeCat = cats[j].replace(/'/g, "\\'");
+                html += '<button onclick="filterByCategory(\'' + safeCat + '\')" class="category-pill px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-700 whitespace-nowrap">' + escapeHtml(cats[j]) + '</button>';
+            }
             container.innerHTML = html;
         }
 
         function filterByCategory(cat) {
-            document.querySelectorAll('.category-pill').forEach(btn => {
-                btn.classList.remove('bg-indigo-600', 'text-white');
-                btn.classList.add('bg-gray-100', 'text-gray-600');
-            });
+            var buttons = document.querySelectorAll('.category-pill');
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove('bg-indigo-600', 'text-white');
+                buttons[i].classList.add('bg-gray-100', 'text-gray-600');
+            }
             event.target.classList.remove('bg-gray-100', 'text-gray-600');
             event.target.classList.add('bg-indigo-600', 'text-white');
             if (cat === 'all') renderList(allData);
-            else renderList(allData.filter(item => item.category === cat));
+            else {
+                var filtered = [];
+                for (var j = 0; j < allData.length; j++) {
+                    if (allData[j].category === cat) filtered.push(allData[j]);
+                }
+                renderList(filtered);
+            }
         }
 
         function debouncedSearch() {
             clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                const term = document.getElementById('searchInput').value.toLowerCase();
-                const filtered = allData.filter(item => 
-                    (item.bn && item.bn.toLowerCase().includes(term)) ||
-                    (item.fr && item.fr.toLowerCase().includes(term)) ||
-                    (item.category && item.category.toLowerCase().includes(term))
-                );
+            searchTimeout = setTimeout(function() {
+                var term = document.getElementById('searchInput').value.toLowerCase();
+                var filtered = [];
+                for (var i = 0; i < allData.length; i++) {
+                    var item = allData[i];
+                    if ((item.bn && item.bn.toLowerCase().indexOf(term) !== -1) ||
+                        (item.fr && item.fr.toLowerCase().indexOf(term) !== -1) ||
+                        (item.category && item.category.toLowerCase().indexOf(term) !== -1)) {
+                        filtered.push(item);
+                    }
+                }
                 renderList(filtered);
             }, 300);
         }
 
         function initRecall() {
             if (allData.length === 0) {
-                document.getElementById
+                document.getElementById('flashcardContainer').classList.add('hidden');
+                document.getElementById('emptyRecall').classList.remove('hidden');
+                return;
+            }
+            document.getElementById('flashcardContainer').classList.remove('hidden');
+            document.getElementById('emptyRecall').classList.add('hidden');
+            currentIndex = 0;
+            cardRevealed = false;
+            updateCard();
+        }
+
         function updateCard() {
             if (allData.length === 0) return;
-            const item = allData[currentIndex];
-            document.getElementById("cardBengali").textContent = item.bn || "";
-            document.getElementById("cardFrench").textContent = item.fr || "";
-            document.querySelector(".flashcard").classList.remove("revealed");
+            var item = allData[currentIndex];
+            document.getElementById('cardBengali').textContent = item.bn || '';
+            document.getElementById('cardFrench').textContent = item.fr || '';
+            document.getElementById('cardFrench').classList.add('hidden');
+            document.getElementById('tapHint').textContent = 'Tap to reveal French';
+            cardRevealed = false;
         }
 
         function revealCard() {
-            document.querySelector(".flashcard").classList.add("revealed");
+            if (!cardRevealed) {
+                document.getElementById('cardFrench').classList.remove('hidden');
+                document.getElementById('tapHint').textContent = 'Tap for next card';
+                cardRevealed = true;
+            } else {
+                nextCard();
+            }
         }
 
         function nextCard() {
@@ -291,127 +321,123 @@
         }
 
         function speakCurrent() {
-            if (allData.length > 0) speak(allData[currentIndex].fr || "");
+            if (allData.length > 0) speak(allData[currentIndex].fr || '');
         }
 
         async function verifyAdmin() {
-            const email = document.getElementById("adminEmail").value;
-            if (!email) return showToast("Enter email first", "error");
+            var email = document.getElementById('adminEmail').value;
+            if (!email) return showToast('Enter email first', 'error');
             try {
-                const res = await fetch("/api/check-admin", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({email})
+                var res = await fetch('/api/check-admin', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email: email})
                 });
-                const data = await res.json();
+                var data = await res.json();
                 if (data.isAdmin) {
                     isAdmin = true;
-                    document.getElementById("adminCheck").classList.add("hidden");
-                    document.getElementById("aiGenerator").classList.remove("hidden");
-                    showToast("Admin verified! Access granted", "success");
+                    document.getElementById('adminCheck').classList.add('hidden');
+                    document.getElementById('aiGenerator').classList.remove('hidden');
+                    showToast('Admin verified! Access granted', 'success');
                 } else {
-                    showToast("Access denied. Admin only.", "error");
+                    showToast('Access denied. Admin only.', 'error');
                 }
-            } catch (e) { showToast("Verification failed", "error"); }
+            } catch (e) { showToast('Verification failed', 'error'); }
         }
 
         async function generateAI() {
-            const topic = document.getElementById("aiTopic").value;
-            const email = document.getElementById("adminEmail").value;
-            if (!topic) return showToast("Enter a topic", "error");
-            const btn = document.getElementById("aiBtn");
+            var topic = document.getElementById('aiTopic').value;
+            var email = document.getElementById('adminEmail').value;
+            if (!topic) return showToast('Enter a topic', 'error');
+            var btn = document.getElementById('aiBtn');
             btn.disabled = true;
-            btn.textContent = "Generating...";
+            btn.textContent = 'Generating...';
             try {
-                const res = await fetch("/api/add-sentence", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({topic, email, generateAI: true})
+                var res = await fetch('/api/add-sentence', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({topic: topic, email: email, generateAI: true})
                 });
-                const data = await res.json();
+                var data = await res.json();
                 if (data.success) {
                     allData.push(data.sentence);
-                    document.getElementById("totalCount").textContent = allData.length;
+                    document.getElementById('totalCount').textContent = allData.length;
                     renderList(allData);
                     updateCategoryPills();
-                    document.getElementById("aiTopic").value = "";
-                    showToast("Sentence added via AI!", "success");
+                    document.getElementById('aiTopic').value = '';
+                    showToast('Sentence added via AI!', 'success');
                 } else {
-                    showToast(data.error || "Failed", "error");
+                    showToast(data.error || 'Failed', 'error');
                 }
-            } catch (e) { showToast("AI generation failed", "error"); }
+            } catch (e) { showToast('AI generation failed', 'error'); }
             btn.disabled = false;
-            btn.textContent = "Generate";
+            btn.textContent = 'Generate';
         }
 
         async function submitSentence() {
-            const email = document.getElementById("addEmail").value;
-            const bn = document.getElementById("addBn").value;
-            const fr = document.getElementById("addFr").value;
-            const category = document.getElementById("addCat").value;
-            if (!email || !bn || !fr) return showToast("Fill all fields", "error");
-            const btn = document.getElementById("submitBtn");
+            var email = document.getElementById('addEmail').value;
+            var bn = document.getElementById('addBn').value;
+            var fr = document.getElementById('addFr').value;
+            var category = document.getElementById('addCat').value;
+            if (!email || !bn || !fr) return showToast('Fill all fields', 'error');
+            var btn = document.getElementById('submitBtn');
             btn.disabled = true;
-            btn.textContent = "Submitting...";
+            btn.textContent = 'Submitting...';
             try {
-                const res = await fetch("/api/add-sentence", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({email, bn, fr, category})
+                var res = await fetch('/api/add-sentence', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email: email, bn: bn, fr: fr, category: category})
                 });
-                const data = await res.json();
-                const status = document.getElementById("addStatus");
+                var data = await res.json();
+                var status = document.getElementById('addStatus');
                 if (data.success) {
                     allData.push(data.sentence);
-                    document.getElementById("totalCount").textContent = allData.length;
+                    document.getElementById('totalCount').textContent = allData.length;
                     renderList(allData);
                     updateCategoryPills();
-                    document.getElementById("addBn").value = "";
-                    document.getElementById("addFr").value = "";
-                    document.getElementById("addCat").value = "";
-                    status.textContent = "Sentence added successfully!";
-                    status.className = "mt-4 text-center text-sm text-green-600";
-                    status.classList.remove("hidden");
-                    showToast("Sentence added!", "success");
+                    document.getElementById('addBn').value = '';
+                    document.getElementById('addFr').value = '';
+                    document.getElementById('addCat').value = '';
+                    status.textContent = 'Sentence added successfully!';
+                    status.className = 'mt-4 text-center text-sm text-green-600';
+                    status.classList.remove('hidden');
+                    showToast('Sentence added!', 'success');
                 } else {
-                    status.textContent = data.error || "Failed to add";
-                    status.className = "mt-4 text-center text-sm text-red-600";
-                    status.classList.remove("hidden");
-                    showToast(data.error || "Failed", "error");
+                    status.textContent = data.error || 'Failed to add';
+                    status.className = 'mt-4 text-center text-sm text-red-600';
+                    status.classList.remove('hidden');
+                    showToast(data.error || 'Failed', 'error');
                 }
-            } catch (e) { showToast("Submission failed", "error"); }
+            } catch (e) { showToast('Submission failed', 'error'); }
             btn.disabled = false;
-            btn.textContent = "Submit";
+            btn.textContent = 'Submit';
         }
 
         function speak(text) {
             if (!text) return;
-            const msg = new SpeechSynthesisUtterance(text);
-            msg.lang = "fr-FR";
+            var msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'fr-FR';
             msg.rate = 0.85;
             window.speechSynthesis.speak(msg);
         }
 
         function escapeHtml(str) {
-            const div = document.createElement("div");
+            var div = document.createElement('div');
             div.textContent = str;
             return div.innerHTML;
         }
 
-        function escapeAttr(str) {
-            return str.replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-        }
-
         function showToast(message, type) {
-            const toast = document.getElementById("toast");
-            const toastText = document.getElementById("toastText");
+            var toast = document.getElementById('toast');
+            var toastText = document.getElementById('toastText');
             toastText.textContent = message;
-            toast.className = "fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full shadow-lg transition-opacity duration-300 pointer-events-none";
-            if (type === "error") toast.classList.add("bg-red-600", "text-white");
-            else if (type === "success") toast.classList.add("bg-green-600", "text-white");
-            else toast.classList.add("bg-gray-800", "text-white");
-            toast.classList.remove("opacity-0");
-            setTimeout(() => toast.classList.add("opacity-0"), 3000);
+            toast.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full shadow-lg transition-opacity duration-300 pointer-events-none';
+            if (type === 'error') toast.classList.add('bg-red-600', 'text-white');
+            else if (type === 'success') toast.classList.add('bg-green-600', 'text-white');
+            else toast.classList.add('bg-gray-800', 'text-white');
+            toast.classList.remove('opacity-0');
+            setTimeout(function() { toast.classList.add('opacity-0'); }, 3000);
         }
     </script>
 </body>
