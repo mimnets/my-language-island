@@ -11,10 +11,9 @@
         .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px -5px rgba(0,0,0,0.1); }
         .phonetic { font-family: monospace; font-size: 0.85em; }
         body { overscroll-behavior: none; }
+        .resource-card:hover { border-color: #6366f1; }
         @media (max-width: 640px) {
             .mobile-padding { padding-left: 1rem; padding-right: 1rem; }
-            .mobile-text { font-size: 0.875rem; }
-            .mobile-btn { padding: 0.75rem 1rem; }
             .hide-mobile { display: none; }
         }
     </style>
@@ -50,10 +49,11 @@
     <nav class="bg-white border-b sticky top-[60px] sm:top-[68px] z-40">
         <div class="max-w-4xl mx-auto">
             <div class="flex overflow-x-auto scrollbar-hide">
-                <button onclick="switchTab('island')" id="tab-island" class="tab-active flex-shrink-0 px-4 sm:px-6 py-3 text-sm font-semibold whitespace-nowrap transition-colors hover:text-indigo-600">🏝️ <span class="hide-mobile">Island</span></button>
-                <button onclick="switchTab('recall')" id="tab-recall" class="flex-shrink-0 px-4 sm:px-6 py-3 text-sm font-semibold text-gray-500 whitespace-nowrap transition-colors hover:text-indigo-600">🧠 <span class="hide-mobile">Recall</span></button>
-                <button onclick="switchTab('add')" id="tab-add" class="flex-shrink-0 px-4 sm:px-6 py-3 text-sm font-semibold text-gray-500 whitespace-nowrap transition-colors hover:text-indigo-600">➕ <span class="hide-mobile">Add</span></button>
-                <button onclick="switchTab('about')" id="tab-about" class="flex-shrink-0 px-4 sm:px-6 py-3 text-sm font-semibold text-gray-500 whitespace-nowrap transition-colors hover:text-indigo-600">📖 <span class="hide-mobile">About</span></button>
+                <button onclick="switchTab('island')" id="tab-island" class="tab-active flex-shrink-0 px-3 sm:px-5 py-3 text-sm font-semibold whitespace-nowrap transition-colors hover:text-indigo-600">🏝️ <span class="hide-mobile">Island</span></button>
+                <button onclick="switchTab('recall')" id="tab-recall" class="flex-shrink-0 px-3 sm:px-5 py-3 text-sm font-semibold text-gray-500 whitespace-nowrap transition-colors hover:text-indigo-600">🧠 <span class="hide-mobile">Recall</span></button>
+                <button onclick="switchTab('add')" id="tab-add" class="flex-shrink-0 px-3 sm:px-5 py-3 text-sm font-semibold text-gray-500 whitespace-nowrap transition-colors hover:text-indigo-600">➕ <span class="hide-mobile">Add</span></button>
+                <button onclick="switchTab('resources')" id="tab-resources" class="flex-shrink-0 px-3 sm:px-5 py-3 text-sm font-semibold text-gray-500 whitespace-nowrap transition-colors hover:text-indigo-600">📚 <span class="hide-mobile">Resources</span></button>
+                <button onclick="switchTab('about')" id="tab-about" class="flex-shrink-0 px-3 sm:px-5 py-3 text-sm font-semibold text-gray-500 whitespace-nowrap transition-colors hover:text-indigo-600">📖 <span class="hide-mobile">About</span></button>
             </div>
         </div>
     </nav>
@@ -65,9 +65,7 @@
         <section id="section-island" class="tab-content">
             <div class="mb-4 sm:mb-6">
                 <div class="relative">
-                    <input id="searchInput" type="text" placeholder="Search..." 
-                           class="w-full p-3 sm:p-4 pl-10 sm:pl-12 bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 outline-none focus:ring-2 focus:ring-indigo-300 text-sm"
-                           oninput="debouncedSearch()">
+                    <input id="searchInput" type="text" placeholder="Search..." class="w-full p-3 sm:p-4 pl-10 sm:pl-12 bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 outline-none focus:ring-2 focus:ring-indigo-300 text-sm" oninput="debouncedSearch()">
                     <span class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
                 </div>
                 <div id="categoryPills" class="flex gap-2 mt-3 overflow-x-auto pb-2"></div>
@@ -86,7 +84,6 @@
                     </div>
                 </div>
             </div>
-
             <div id="flashcardContainer" class="hidden">
                 <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-2xl sm:rounded-3xl p-4 sm:p-8 min-h-[260px] sm:min-h-[280px] flex flex-col justify-center items-center shadow-2xl cursor-pointer" onclick="revealCard()">
                     <p class="text-indigo-200 text-[10px] sm:text-xs uppercase tracking-widest mb-2 sm:mb-4">Recall French</p>
@@ -96,13 +93,11 @@
                     <p id="cardFrPhonetic" class="text-indigo-200 text-sm sm:text-lg italic hidden phonetic text-center px-2">fr phonetic</p>
                     <p id="tapHint" class="text-indigo-300 text-xs sm:text-sm mt-3 sm:mt-4">Tap to reveal French</p>
                 </div>
-
                 <div class="flex justify-center items-center gap-3 sm:gap-4 mt-6 sm:mt-8">
                     <button onclick="prevCard()" class="bg-white px-4 sm:px-5 py-2 sm:py-3 rounded-xl shadow-sm border hover:bg-gray-50 transition font-medium text-sm">←</button>
                     <button onclick="speakCurrent()" class="bg-indigo-100 text-indigo-700 p-2 sm:p-3 rounded-xl hover:bg-indigo-200 transition text-lg sm:text-xl">🔊</button>
                     <button onclick="nextCard()" class="bg-white px-4 sm:px-5 py-2 sm:py-3 rounded-xl shadow-sm border hover:bg-gray-50 transition font-medium text-sm">→</button>
                 </div>
-
                 <div id="aiGenerator" class="mt-6 sm:mt-8 hidden">
                     <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-amber-200">
                         <h4 class="font-semibold text-amber-800 mb-3 text-sm sm:text-base">✨ AI Generator</h4>
@@ -114,7 +109,6 @@
                     </div>
                 </div>
             </div>
-
             <div id="emptyRecall" class="text-center py-12 text-gray-400 hidden">
                 <div class="text-4xl mb-2">🧠</div><p class="text-sm">No sentences yet</p>
             </div>
@@ -125,7 +119,6 @@
             <div class="bg-white p-4 sm:p-8 rounded-xl sm:rounded-2xl shadow-sm border">
                 <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-1">➕ Submit New Sentence</h2>
                 <p class="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">Your sentence will be reviewed by admin.</p>
-                
                 <div class="space-y-3 sm:space-y-4">
                     <div>
                         <label class="block text-xs sm:text-sm font-medium text-gray-600 mb-1">Your Email (optional)</label>
@@ -159,6 +152,27 @@
             </div>
         </section>
 
+        <!-- Resources Tab -->
+        <section id="section-resources" class="tab-content hidden">
+            <div class="mb-4 sm:mb-6">
+                <h2 class="text-lg sm:text-xl font-bold text-gray-800 mb-2">📚 Learning Resources</h2>
+                <p class="text-xs sm:text-sm text-gray-500">French learning videos, blogs, and helpful links</p>
+            </div>
+            
+            <!-- Resource Categories -->
+            <div id="resourceCategories" class="flex gap-2 mb-4 overflow-x-auto pb-2">
+                <button onclick="filterResources('all')" class="resource-cat px-3 py-1 rounded-full text-xs font-medium bg-indigo-600 text-white whitespace-nowrap">All</button>
+                <button onclick="filterResources('video')" class="resource-cat px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-700 whitespace-nowrap">🎬 Video</button>
+                <button onclick="filterResources('blog')" class="resource-cat px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-700 whitespace-nowrap">📝 Blog</button>
+                <button onclick="filterResources('link')" class="resource-cat px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-700 whitespace-nowrap">🔗 Link</button>
+                <button onclick="filterResources('document')" class="resource-cat px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-700 whitespace-nowrap">📄 Document</button>
+            </div>
+            
+            <div id="resourceList" class="space-y-3 sm:space-y-4">
+                <div class="text-center py-12 text-gray-400"><div class="text-4xl mb-2">📚<div>Loading resources...</div></div>
+            </div>
+        </section>
+
         <!-- About Tab -->
         <section id="section-about" class="tab-content hidden">
             <div class="bg-white p-4 sm:p-8 rounded-xl sm:rounded-2xl shadow-sm border space-y-4 sm:space-y-6">
@@ -184,7 +198,7 @@
                     </ul>
                 </div>
                 <div class="text-center text-xs sm:text-sm text-gray-400">
-                    <p>Built for <strong>Monirul Islam</strong> 🇧p>
+                    <p>Built for <strong>Monirul Islam</strong> 🇧🇩</p>
                     <p class="mt-1">Powered by Groq AI & GitHub</p>
                 </div>
             </div>
@@ -204,12 +218,16 @@
 
     <script>
         var allData = [];
+        var allResources = [];
         var currentIndex = 0;
         var isAdmin = false;
         var searchTimeout = null;
         var cardRevealed = false;
 
-        document.addEventListener('DOMContentLoaded', loadIsland);
+        document.addEventListener('DOMContentLoaded', function() {
+            loadIsland();
+            loadResources();
+        });
 
         async function loadIsland() {
             try {
@@ -222,6 +240,17 @@
             } catch (e) {
                 showToast('Failed to load island data', 'error');
                 renderEmpty();
+            }
+        }
+
+        async function loadResources() {
+            try {
+                var res = await fetch('/api/resources');
+                if (!res.ok) throw new Error('Failed to load');
+                allResources = await res.json();
+                renderResources(allResources);
+            } catch (e) {
+                renderEmptyResources();
             }
         }
 
@@ -274,6 +303,55 @@
                     (item.date ? '<p class="text-[10px] sm:text-xs text-gray-400 mt-2">' + item.date + '</p>' : '') + '</div>';
             }
             list.innerHTML = html;
+        }
+
+        function renderResources(items) {
+            var list = document.getElementById('resourceList');
+            if (items.length === 0) {
+                list.innerHTML = '<div class="text-center py-12 text-gray-400"><div class="text-4xl mb-2">📚</div><p class="text-sm">No resources yet</p><p class="text-xs mt-2">Admin can add resources from admin panel</p></div>';
+                return;
+            }
+            var html = '';
+            var typeIcons = { video: '🎬', blog: '📝', link: '🔗', document: '📄' };
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i];
+                var icon = typeIcons[item.type] || '🔗';
+                html += '<a href="' + escapeHtml(item.url) + '" target="_blank" rel="noopener noreferrer" class="resource-card block bg-white p-4 sm:p-5 rounded-xl border border-gray-100 hover:border-indigo-300 transition-all">' +
+                    '<div class="flex items-start gap-3">' +
+                    '<span class="text-2xl sm:text-3xl">' + icon + '</span>' +
+                    '<div class="flex-grow min-w-0">' +
+                    '<h3 class="font-bold text-gray-800 text-sm sm:text-base">' + escapeHtml(item.title) + '</h3>' +
+                    (item.description ? '<p class="text-gray-500 text-xs sm:text-sm mt-1">' + escapeHtml(item.description) + '</p>' : '') +
+                    '<div class="flex flex-wrap gap-1 mt-2">';
+                if (item.tags && item.tags.length > 0) {
+                    for (var j = 0; j < item.tags.length; j++) {
+                        html += '<span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded">' + escapeHtml(item.tags[j]) + '</span>';
+                    }
+                }
+                html += '</div></div><span class="text-gray-400 text-sm">↗</span></div></a>';
+            }
+            list.innerHTML = html;
+        }
+
+        function renderEmptyResources() {
+            document.getElementById('resourceList').innerHTML = '<div class="text-center py-12 text-gray-400"><div class="text-4xl mb-2">📚</div><p class="text-sm">Failed to load resources</p></div>';
+        }
+
+        function filterResources(type) {
+            var buttons = document.querySelectorAll('.resource-cat');
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove('bg-indigo-600', 'text-white');
+                buttons[i].classList.add('bg-gray-100', 'text-gray-600');
+            }
+            event.target.classList.remove('bg-gray-100', 'text-gray-600');
+            event.target.classList.add('bg-indigo-600', 'text-white');
+            
+            if (type === 'all') {
+                renderResources(allResources);
+            } else {
+                var filtered = allResources.filter(function(r) { return r.type === type; });
+                renderResources(filtered);
+            }
         }
 
         function renderEmpty() {
@@ -369,37 +447,18 @@
             }
         }
 
-        function nextCard() {
-            currentIndex = (currentIndex + 1) % allData.length;
-            updateCard();
-        }
-
-        function prevCard() {
-            currentIndex = (currentIndex - 1 + allData.length) % allData.length;
-            updateCard();
-        }
-
-        function speakCurrent() {
-            if (allData.length > 0) speak(allData[currentIndex].fr || '');
-        }
+        function nextCard() { currentIndex = (currentIndex + 1) % allData.length; updateCard(); }
+        function prevCard() { currentIndex = (currentIndex - 1 + allData.length) % allData.length; updateCard(); }
+        function speakCurrent() { if (allData.length > 0) speak(allData[currentIndex].fr || ''); }
 
         async function verifyAdmin() {
             var email = document.getElementById('adminEmail').value;
             if (!email) return showToast('Enter email first', 'error');
             try {
-                var res = await fetch('/api/check-admin', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({email: email})
-                });
+                var res = await fetch('/api/check-admin', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email: email}) });
                 var data = await res.json();
-                if (data.isAdmin) {
-                    isAdmin = true;
-                    document.getElementById('aiGenerator').classList.remove('hidden');
-                    showToast('Admin verified!', 'success');
-                } else {
-                    showToast('Access denied. Admin only.', 'error');
-                }
+                if (data.isAdmin) { isAdmin = true; document.getElementById('aiGenerator').classList.remove('hidden'); showToast('Admin verified!', 'success'); }
+                else { showToast('Access denied. Admin only.', 'error'); }
             } catch (e) { showToast('Verification failed', 'error'); }
         }
 
@@ -413,11 +472,7 @@
             btn.disabled = true;
             btn.textContent = 'Generating...';
             try {
-                var res = await fetch('/api/add-sentence', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({topic: topic, category: category, email: email, generateAI: true})
-                });
+                var res = await fetch('/api/add-sentence', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({topic: topic, category: category, email: email, generateAI: true}) });
                 var data = await res.json();
                 if (data.success) {
                     allData.push(data.sentence);
@@ -427,9 +482,7 @@
                     document.getElementById('aiTopic').value = '';
                     document.getElementById('aiCategory').value = '';
                     showToast('Sentence added!', 'success');
-                } else {
-                    showToast(data.error || 'Failed', 'error');
-                }
+                } else { showToast(data.error || 'Failed', 'error'); }
             } catch (e) { showToast('AI generation failed', 'error'); }
             btn.disabled = false;
             btn.textContent = 'Generate';
@@ -447,11 +500,7 @@
             btn.disabled = true;
             btn.textContent = 'Submitting...';
             try {
-                var res = await fetch('/api/submit-sentence', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({bn: bn, fr: fr, fr_phonetic: frPhonetic, bn_phonetic: bnPhonetic, category: category, submitterEmail: submitterEmail})
-                });
+                var res = await fetch('/api/submit-sentence', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({bn: bn, fr: fr, fr_phonetic: frPhonetic, bn_phonetic: bnPhonetic, category: category, submitterEmail: submitterEmail}) });
                 var data = await res.json();
                 var status = document.getElementById('addStatus');
                 if (data.success) {
@@ -475,20 +524,8 @@
             btn.textContent = 'Submit for Review';
         }
 
-        function speak(text) {
-            if (!text) return;
-            var msg = new SpeechSynthesisUtterance(text);
-            msg.lang = 'fr-FR';
-            msg.rate = 0.85;
-            window.speechSynthesis.speak(msg);
-        }
-
-        function escapeHtml(str) {
-            var div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        }
-
+        function speak(text) { if (!text) return; var msg = new SpeechSynthesisUtterance(text); msg.lang = 'fr-FR'; msg.rate = 0.85; window.speechSynthesis.speak(msg); }
+        function escapeHtml(str) { var div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
         function showToast(message, type) {
             var toast = document.getElementById('toast');
             var toastText = document.getElementById('toastText');

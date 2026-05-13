@@ -8,15 +8,12 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        @media (max-width: 640px) {
-            .mobile-text { font-size: 0.875rem; }
-            .mobile-padding { padding-left: 1rem; padding-right: 1rem; }
-        }
+        @media (max-width: 640px) { .mobile-text { font-size: 0.875rem; } .mobile-padding { padding-left: 1rem; padding-right: 1rem; } }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
 
-    <!-- Mobile Header with Home Button -->
+    <!-- Header with Home Button -->
     <header class="bg-white/90 backdrop-blur-sm shadow-sm sticky top-0 z-50">
         <div class="max-w-5xl mx-auto px-4 py-3">
             <div class="flex items-center justify-between">
@@ -49,9 +46,29 @@
         <!-- Admin Tools -->
         <div id="adminTools" class="hidden space-y-6 sm:space-y-8">
             
+            <!-- Add Resource Form -->
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-green-200">
+                <h3 class="font-bold text-green-800 mb-3 sm:mb-4 text-sm sm:text-base">➕ Add New Resource</h3>
+                <div class="space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input id="resTitle" type="text" placeholder="Resource Title" class="p-2 sm:p-3 rounded-xl border border-green-200 outline-none text-sm">
+                        <select id="resType" class="p-2 sm:p-3 rounded-xl border border-green-200 outline-none text-sm">
+                            <option value="link">🔗 Link</option>
+                            <option value="video">🎬 Video</option>
+                            <option value="blog">📝 Blog</option>
+                            <option value="document">📄 Document</option>
+                        </select>
+                    </div>
+                    <input id="resUrl" type="url" placeholder="https://..." class="w-full p-2 sm:p-3 rounded-xl border border-green-200 outline-none text-sm">
+                    <input id="resDesc" type="text" placeholder="Short description (optional)" class="w-full p-2 sm:p-3 rounded-xl border border-green-200 outline-none text-sm">
+                    <input id="resTags" type="text" placeholder="Tags (comma separated, e.g. french, beginners, video)" class="w-full p-2 sm:p-3 rounded-xl border border-green-200 outline-none text-sm">
+                    <button onclick="addResource()" id="addResBtn" class="w-full bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition text-sm sm:text-base">Add Resource</button>
+                </div>
+            </div>
+
             <!-- AI Generator -->
             <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-amber-200">
-                <h3 class="font-bold text-amber-800 mb-3 sm:mb-4 text-sm sm:text-base">✨ AI Generator (with Phonetics)</h3>
+                <h3 class="font-bold text-amber-800 mb-3 sm:mb-4 text-sm sm:text-base">✨ AI Sentence Generator</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
                     <input id="aiTopic" type="text" placeholder="Topic (e.g. Fashion)" class="p-2 sm:p-3 rounded-xl border border-amber-200 outline-none text-sm">
                     <input id="aiCategory" type="text" placeholder="Category name" class="p-2 sm:p-3 rounded-xl border border-amber-200 outline-none text-sm">
@@ -60,30 +77,24 @@
             </div>
 
             <!-- Stats -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
                 <div class="bg-indigo-50 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-indigo-200">
-                    <h3 class="font-bold text-indigo-800 mb-2 sm:mb-3 text-xs sm:text-sm">📊 Island</h3>
-                    <div class="space-y-1 sm:space-y-2">
-                        <div class="flex justify-between text-xs sm:text-sm">
-                            <span class="text-gray-600">Total</span>
-                            <span id="totalApproved" class="font-bold text-indigo-700">0</span>
-                        </div>
-                    </div>
+                    <h3 class="font-bold text-indigo-800 mb-1 text-xs sm:text-sm">📊 Sentences</h3>
+                    <p id="totalApproved" class="text-2xl sm:text-3xl font-bold text-indigo-700">0</p>
                 </div>
                 <div class="bg-amber-50 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-amber-200">
-                    <h3 class="font-bold text-amber-800 mb-2 sm:mb-3 text-xs sm:text-sm">⏳ Pending</h3>
-                    <div class="space-y-1 sm:space-y-2">
-                        <div class="flex justify-between text-xs sm:text-sm">
-                            <span class="text-gray-600">Review</span>
-                            <span id="totalPending" class="font-bold text-amber-700">0</span>
-                        </div>
-                    </div>
+                    <h3 class="font-bold text-amber-800 mb-1 text-xs sm:text-sm">⏳ Pending</h3>
+                    <p id="totalPending" class="text-2xl sm:text-3xl font-bold text-amber-700">0</p>
                 </div>
-                <div class="bg-green-50 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-green-200 col-span-2 sm:col-span-1">
-                    <h3 class="font-bold text-green-800 mb-2 sm:mb-3 text-xs sm:text-sm">🔊 TTS Test</h3>
-                    <div class="flex gap-2">
-                        <input id="testFr" type="text" placeholder="French" class="flex-grow p-2 rounded-xl border border-green-200 outline-none text-xs sm:text-sm">
-                        <button onclick="testSpeak()" class="bg-green-600 text-white px-3 sm:px-4 py-2 rounded-xl font-semibold hover:bg-green-700 transition text-sm">🔊</button>
+                <div class="bg-green-50 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-green-200">
+                    <h3 class="font-bold text-green-800 mb-1 text-xs sm:text-sm">📚 Resources</h3>
+                    <p id="totalResources" class="text-2xl sm:text-3xl font-bold text-green-700">0</p>
+                </div>
+                <div class="bg-purple-50 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-purple-200">
+                    <h3 class="font-bold text-purple-800 mb-1 text-xs sm:text-sm">🔊 TTS</h3>
+                    <div class="flex gap-1">
+                        <input id="testFr" type="text" placeholder="Test" class="w-full p-1 rounded border border-purple-200 outline-none text-xs">
+                        <button onclick="testSpeak()" class="bg-purple-600 text-white px-2 py-1 rounded font-semibold text-xs">🔊</button>
                     </div>
                 </div>
             </div>
@@ -96,7 +107,15 @@
                 </div>
             </div>
 
-            <!-- Manage Island -->
+            <!-- Manage Resources -->
+            <div>
+                <h3 class="font-bold text-gray-800 mb-3 sm:mb-4 text-sm sm:text-base">📚 Manage Resources</h3>
+                <div id="resourceList" class="space-y-2 sm:space-y-3">
+                    <p class="text-center text-gray-400 py-8 text-sm">Loading...</p>
+                </div>
+            </div>
+
+            <!-- Manage Island Sentences -->
             <div>
                 <h3 class="font-bold text-gray-800 mb-3 sm:mb-4 text-sm sm:text-base">🗑️ Manage Island Sentences</h3>
                 <div id="islandList" class="space-y-2 sm:space-y-3">
@@ -129,6 +148,7 @@
             loadStats();
             loadPending();
             loadIsland();
+            loadResources();
         }
 
         async function loadStats() {
@@ -141,12 +161,18 @@
             } catch(e) {}
             
             try {
-                var res2 = await fetch('/api/admin/pending', {
-                    headers: {'x-admin-email': adminEmail}
-                });
+                var res2 = await fetch('/api/admin/pending', { headers: {'x-admin-email': adminEmail} });
                 if (res2.ok) {
                     var pending = await res2.json();
                     document.getElementById('totalPending').textContent = pending.length;
+                }
+            } catch(e) {}
+            
+            try {
+                var res3 = await fetch('/api/resources');
+                if (res3.ok) {
+                    var resources = await res3.json();
+                    document.getElementById('totalResources').textContent = resources.length;
                 }
             } catch(e) {}
         }
@@ -154,9 +180,7 @@
         async function loadPending() {
             var list = document.getElementById('pendingList');
             try {
-                var res = await fetch('/api/admin/pending', {
-                    headers: {'x-admin-email': adminEmail}
-                });
+                var res = await fetch('/api/admin/pending', { headers: {'x-admin-email': adminEmail} });
                 var data = await res.json();
                 
                 if (data.length === 0) {
@@ -184,9 +208,7 @@
                         '<button onclick="reject(\'' + item.id + '\')" class="flex-1 bg-red-100 text-red-600 px-3 sm:px-4 py-2 rounded-xl font-semibold hover:bg-red-200 transition text-xs sm:text-sm">✗ Reject</button></div></div>';
                 }
                 list.innerHTML = html;
-            } catch(e) {
-                list.innerHTML = '<p class="text-center text-red-400 py-8 text-sm">Failed to load</p>';
-            }
+            } catch(e) { list.innerHTML = '<p class="text-center text-red-400 py-8 text-sm">Failed to load</p>'; }
         }
 
         async function loadIsland() {
@@ -212,65 +234,112 @@
                         '<button onclick="deleteSentence(\'' + (item.id || item.bn) + '\')" class="w-full sm:w-auto bg-red-100 text-red-600 px-3 sm:px-4 py-2 rounded-xl font-semibold hover:bg-red-200 transition text-xs sm:text-sm">🗑️ Delete</button></div>';
                 }
                 list.innerHTML = html;
-            } catch(e) {
-                list.innerHTML = '<p class="text-center text-red-400 py-8 text-sm">Failed to load</p>';
-            }
+            } catch(e) { list.innerHTML = '<p class="text-center text-red-400 py-8 text-sm">Failed to load</p>'; }
+        }
+
+        async function loadResources() {
+            var list = document.getElementById('resourceList');
+            try {
+                var res = await fetch('/api/resources');
+                var data = await res.json();
+                
+                if (data.length === 0) {
+                    list.innerHTML = '<p class="text-center text-gray-400 py-8 text-sm">No resources yet</p>';
+                    return;
+                }
+                
+                var typeIcons = { video: '🎬', blog: '📝', link: '🔗', document: '📄' };
+                var html = '';
+                for (var i = 0; i < data.length; i++) {
+                    var item = data[i];
+                    var icon = typeIcons[item.type] || '🔗';
+                    html += '<div class="bg-white p-3 sm:p-4 rounded-xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 hover:bg-gray-50 transition">' +
+                        '<div class="flex items-center gap-3 flex-grow min-w-0">' +
+                        '<span class="text-2xl">' + icon + '</span>' +
+                        '<div class="flex-grow min-w-0">' +
+                        '<h4 class="font-bold text-gray-800 text-sm truncate">' + escapeHtml(item.title) + '</h4>' +
+                        '<a href="' + escapeHtml(item.url) + '" target="_blank" class="text-xs text-indigo-600 hover:text-indigo-700 truncate block">' + escapeHtml(item.url) + '</a>' +
+                        '<div class="flex flex-wrap gap-1 mt-1">';
+                    if (item.tags && item.tags.length > 0) {
+                        for (var j = 0; j < item.tags.length; j++) {
+                            html += '<span class="text-[10px]bg-gray-100 text-gray-600 px-2 py-1 rounded">' + escapeHtml(item.tags[j]) + '</span>';
+                        }
+                    }
+                    html += '</div></div></div>';
+                    html += '<button onclick="deleteResource(\'' + item.id + '\')" class="w-full sm:w-auto bg-red-100 text-red-600 px-3 sm:px-4 py-2 rounded-xl font-semibold hover:bg-red-200 transition text-xs sm:text-sm">🗑️</button></div>';
+                }
+                list.innerHTML = html;
+            } catch(e) { list.innerHTML = '<p class="text-center text-red-400 py-8 text-sm">Failed to load</p>'; }
         }
 
         async function approve(id) {
             try {
-                var res = await fetch('/api/admin/approve', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({email: adminEmail, id: id})
-                });
+                var res = await fetch('/api/admin/approve', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email: adminEmail, id: id}) });
                 var data = await res.json();
-                if (data.success) {
-                    alert('Sentence approved and added to island!');
-                    loadStats();
-                    loadPending();
-                    loadIsland();
-                } else {
-                    alert('Error: ' + (data.error || 'Failed'));
-                }
+                if (data.success) { alert('Sentence approved!'); loadStats(); loadPending(); loadIsland(); }
+                else { alert('Error: ' + (data.error || 'Failed')); }
             } catch(e) { alert('Failed to approve'); }
         }
 
         async function reject(id) {
             if (!confirm('Reject this submission?')) return;
             try {
-                var res = await fetch('/api/admin/reject', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({email: adminEmail, id: id})
-                });
+                var res = await fetch('/api/admin/reject', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email: adminEmail, id: id}) });
                 var data = await res.json();
-                if (data.success) {
-                    loadStats();
-                    loadPending();
-                } else {
-                    alert('Error: ' + (data.error || 'Failed'));
-                }
+                if (data.success) { loadStats(); loadPending(); }
+                else { alert('Error: ' + (data.error || 'Failed')); }
             } catch(e) { alert('Failed to reject'); }
         }
 
         async function deleteSentence(id) {
             if (!confirm('Delete this sentence? This cannot be undone.')) return;
             try {
-                var res = await fetch('/api/admin/delete', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({email: adminEmail, id: id})
-                });
+                var res = await fetch('/api/admin/delete', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email: adminEmail, id: id}) });
+                var data = await res.json();
+                if (data.success) { alert('Sentence deleted!'); loadStats(); loadIsland(); }
+                else { alert('Error: ' + (data.error || 'Failed')); }
+            } catch(e) { alert('Failed to delete'); }
+        }
+
+        async function deleteResource(id) {
+            if (!confirm('Delete this resource?')) return;
+            try {
+                var res = await fetch('/api/resources/' + id, { method: 'DELETE', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email: adminEmail}) });
+                var data = await res.json();
+                if (data.success) { alert('Resource deleted!'); loadStats(); loadResources(); }
+                else { alert('Error: ' + (data.error || 'Failed')); }
+            } catch(e) { alert('Failed to delete'); }
+        }
+
+        async function addResource() {
+            var title = document.getElementById('resTitle').value;
+            var type = document.getElementById('resType').value;
+            var url = document.getElementById('resUrl').value;
+            var description = document.getElementById('resDesc').value;
+            var tagsStr = document.getElementById('resTags').value;
+            var tags = tagsStr ? tagsStr.split(',').map(function(t) { return t.trim(); }).filter(function(t) { return t; }) : [];
+            
+            if (!title || !url) { alert('Title and URL are required'); return; }
+            
+            var btn = document.getElementById('addResBtn');
+            btn.disabled = true;
+            btn.textContent = 'Adding...';
+            
+            try {
+                var res = await fetch('/api/resources', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({email: adminEmail, title: title, type: type, url: url, description: description, tags: tags}) });
                 var data = await res.json();
                 if (data.success) {
-                    alert('Sentence deleted!');
+                    alert('Resource added!');
+                    document.getElementById('resTitle').value = '';
+                    document.getElementById('resUrl').value = '';
+                    document.getElementById('resDesc').value = '';
+                    document.getElementById('resTags').value = '';
                     loadStats();
-                    loadIsland();
-                } else {
-                    alert('Error: ' + (data.error || 'Failed'));
-                }
-            } catch(e) { alert('Failed to delete'); }
+                    loadResources();
+                } else { alert('Error: ' + (data.error || 'Failed')); }
+            } catch(e) { alert('Failed to add resource'); }
+            btn.disabled = false;
+            btn.textContent = 'Add Resource';
         }
 
         async function generateAI() {
@@ -283,33 +352,18 @@
             btn.textContent = 'Generating...';
             
             try {
-                var res = await fetch('/api/add-sentence', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        topic: topic,
-                        category: category,
-                        email: adminEmail,
-                        generateAI: true
-                    })
-                });
+                var res = await fetch('/api/add-sentence', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({topic: topic, category: category, email: adminEmail, generateAI: true}) });
                 var data = await res.json();
                 if (data.success) {
-                    alert('Added!\n\n' + 
-                        '🇫🇷 ' + data.sentence.fr + '\n' +
-                        '🔤 ' + (data.sentence.fr_phonetic || 'N/A') + '\n' +
-                        '🇧🇩 ' + data.sentence.bn + '\n' +
-                        '📝 ' + (data.sentence.bn_phonetic || 'N/A'));
+                    alert('Added!\n\n' + '🇫🇷 ' + data.sentence.fr + '\n🔤 ' + (data.sentence.fr_phonetic || 'N/A') + '\n🇧🇩 ' + data.sentence.bn + '\n📝 ' + (data.sentence.bn_phonetic || 'N/A'));
                     document.getElementById('aiTopic').value = '';
                     document.getElementById('aiCategory').value = '';
                     loadStats();
                     loadIsland();
-                } else {
-                    alert('Error: ' + (data.error || 'Failed'));
-                }
+                } else { alert('Error: ' + (data.error || 'Failed')); }
             } catch(e) { alert('Failed to generate'); }
             btn.disabled = false;
-            btn.textText = 'Generate with Phonetics';
+            btn.textContent = 'Generate with Phonetics';
         }
 
         function testSpeak() {
@@ -321,6 +375,7 @@
             window.speechSynthesis.speak(msg);
         }
 
+        function escapeHtml(str) { var div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
         function logout() { location.reload(); }
     </script>
 </body>
