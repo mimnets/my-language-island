@@ -47,8 +47,7 @@ app.post('/api/admin/add-ai', async (req, res) => {
         let text = aiData.candidates[0].content.parts[0].text;
         
         // এআই কোড ব্লকের ভেতরে ডাটা পাঠালে তা ক্লিন করা
-        text = text.replace(/```json/g, "").replace(/
-```/g, "").trim();
+        text = text.replace(/```json/g, "").replace(/```/g, "").trim();
         const newSentence = JSON.parse(text);
 
         // গিটহাবে পুশ করা
