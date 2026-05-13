@@ -3,63 +3,61 @@ const axios = require('axios');
 const app = express();
 app.use(express.json());
 
-// কনফিগারেশন - এগুলো Vercel Env থেকে আসবে
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const { GITHUB_TOKEN, GEMINI_API_KEY, ADMIN_EMAIL } = process.env;
 const REPO_OWNER = "mimnets"; 
-const REPO_NAME = "my-language-island"; // আপনার রিপোজিটরি নাম ঠিক আছে তো?
+const REPO_NAME = "my-language-island";
 const FILE_PATH = "data.json";
 
+// ১. ডাটা রিড করা
 app.get('/api/island', async (req, res) => {
     try {
         const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
-        const response = await axios.get(url, { 
-            headers: { 
-                Authorization: `token ${GITHUB_TOKEN}`,
-                'Accept': 'application/vnd.github.v3+json'
-            } 
-        });
-        const content = Buffer.from(response.data.content, 'base64').toString();
-        res.json(JSON.parse(content));
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+        const response = await axios.get(url, { headers: { Authorization: `token ${GITHUB_TOKEN}` } });
+        res.json(JSON.parse(Buffer.from(response.data.content, 'base64').toString()));
+    } catch (e) { res.status(500).json({ error: "Failed to fetch" }); }
 });
 
+// ২. AI দিয়ে বাক্য তৈরি (Gemini)
+app.post('/api/ai-generate', async (req, res) => {
+    const { topic } = req.body;
+    try {
+        const prompt = `Generate a unique French sentence about "${topic}" with its Bengali translation. Return ONLY a JSON object: {"bn": "...", "fr": "..."}`;
+        const genUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+        
+        const response = await axios.post(genUrl, {
+            contents: [{ parts: [{ text: prompt }] }]
+        });
+        
+        const text = response.data.candidates[0].content.parts[0].text;
+        res.json(JSON.parse(text.replace(/```json|
+```/g, "")));
+    } catch (e) { res.status(500).json({ error: "AI Generation failed" }); }
+});
+
+// ৩. ডাটা সেভ করা (Admin বা Public এর জন্য)
 app.post('/api/add', async (req, res) => {
-    const { bn, fr, category } = req.body;
+    const { bn, fr, category, userEmail } = req.body;
+    const isAdmin = (userEmail === ADMIN_EMAIL);
+
     try {
         const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
-        
-        // ১. বর্তমান ফাইলটি ডাউনলোড করা
-        const getFile = await axios.get(url, { 
-            headers: { Authorization: `token ${GITHUB_TOKEN}` } 
-        });
-        
-        const currentData = JSON.parse(Buffer.from(getFile.data.content, 'base64').toString());
-        
-        // ২. নতুন ডেটা পুশ করা
+        const getFile = await axios.get(url, { headers: { Authorization: `token ${GITHUB_TOKEN}` } });
+        let currentData = JSON.parse(Buffer.from(getFile.data.content, 'base64').toString());
+
         currentData.push({ 
-            bn, 
-            fr, 
-            category: category || 'General', 
-            date: new Date().toLocaleDateString() 
+            bn, fr, category: category || 'General', 
+            date: new Date().toLocaleDateString(),
+            approved: isAdmin // এডমিন হলে সরাসরি এপ্রুভ হবে
         });
 
-        // ৩. গিটহাবে আপডেট করা
         await axios.put(url, {
-            message: `Update by Monirul: ${bn}`,
+            message: `Added by ${userEmail || 'Public'}`,
             content: Buffer.from(JSON.stringify(currentData, null, 2)).toString('base64'),
             sha: getFile.data.sha
-        }, { 
-            headers: { Authorization: `token ${GITHUB_TOKEN}` } 
-        });
+        }, { headers: { Authorization: `token ${GITHUB_TOKEN}` } });
 
         res.json({ success: true });
-    } catch (error) {
-        // এরর মেসেজটি ডিটেইলসে পাঠানো হচ্ছে
-        const errorMsg = error.response ? JSON.stringify(error.response.data) : error.message;
-        res.status(500).json({ error: errorMsg });
-    }
+    } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 module.exports = app;
