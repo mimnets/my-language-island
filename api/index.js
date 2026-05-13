@@ -169,6 +169,104 @@ app.post('/api/admin/delete', async (req, res) => {
     } catch (error) { res.status(500).json({ error: error.message || 'Failed to delete sentence' }); }
 });
 
+app.post('/api/preview-ai', async (req, res) => {
+    try {
+        const { email, topic } = req.body;
+        if (!email || email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return res.status(403).json({ error: 'Unauthorized. Admin access only.' });
+        if (!topic) return res.status(400).json({ error: 'Topic is required' });
+        
+        if (!GROQ_API_KEY) return res.status(500).json({ error: 'GROQ_API_KEY is not set. Please add it to Vercel environment variables.' });
+        const prompt = `Generate exactly one French learning sentence for the topic "${topic}". Return ONLY valid JSON like this, no markdown or extra text:
+{"bn": "Bengali translation", "fr": "French sentence", "fr_phonetic": "English phonetic", "bn_phonetic": "Bengali phonetic", "category": "${topic}"}`;
+        const GROQ_URL = `https://api.groq.com/openai/v1/chat/completions`;
+        const aiResponse = await fetch(GROQ_URL, { method: 'POST', headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'llama-3.1-8b-instant', messages: [{ role: 'system', content: 'You are a helpful French language tutor. Always respond with ONLY valid JSON like: {"bn": "Bengali text", "fr": "French text", "fr_phonetic": "English phonetic", "bn_phonetic": "Bengali phonetic", "category": "Topic"}' }, { role: 'user', content: prompt }], temperature: 0.7, max_tokens: 512 }) });
+        if (!aiResponse.ok) { const errorData = await aiResponse.json(); return res.status(aiResponse.status).json({ error: 'Groq API failed: ' + (errorData?.error?.message || 'Unknown error') }); }
+        const aiData = await aiResponse.json();
+        const aiText = aiData.choices?.[0]?.message?.content;
+        let sentence = { bn: '', fr: '', fr_phonetic: '', bn_phonetic: '', category: topic, date: new Date().toISOString().split('T')[0] };
+        if (aiText) {
+            let cleaned = aiText.trim();
+            const jsonStart = cleaned.indexOf('{');
+            const jsonEnd = cleaned.lastIndexOf('}') + 1;
+            if (jsonStart !== -1 && jsonEnd !== 0) cleaned = cleaned.substring(jsonStart, jsonEnd);
+            const parsed = JSON.parse(cleaned);
+            sentence = { 
+                bn: parsed.bn?.trim() || '', 
+                fr: parsed.fr?.trim() || '', 
+                fr_phonetic: parsed.fr_phonetic?.trim() || '', 
+                bn_phonetic: parsed.bn_phonetic?.trim() || '', 
+                category: topic, 
+                date: new Date().toISOString().split('T')[0] 
+            };
+        }
+        res.json({ success: true, sentence: sentence, preview: true });
+    } catch (error) { res.status(500).json({ error: error.message || 'Failed to generate preview' }); }
+});
+
+app.post('/api/import-starter', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email || email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) return res.status(403).json({ error: 'Unauthorized. Admin access only.' });
+        
+        // Read starter-data.json from local file (this runs on Vercel, so need to serve it via GitHub)
+        // Since starter-data.json is in repo, we can read it via GitHub API
+        try {
+            const starterDataResponse = await fetch(`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/starter-data.json`);
+            if (!starterDataResponse.ok) throw new Error('Failed to fetch starter data');
+            const starterSentences = await starterDataResponse.json();
+            
+            // Get current data.json
+            const fileData = await getGitHubFile(FILE_PATH);
+            let currentData = fileData ? await parseJSONSafely(fileData.content) : [];
+            
+            // Add IDs to starter sentences if not present
+            const sentencesToAdd = starterSentences.map(s => ({
+                ...s,
+                id: s.id || Date.now().toString() + Math.random().toString(36).substring(2, 9)
+            }));
+            
+            // Merge, avoiding duplicates based on Bengali text
+            const existingBnSet = new Set(currentData.map(s => s.bn));
+            const newSentences = sentencesToAdd.filter(s => !existingBnSet.has(s.bn));
+            
+            if (newSentences.length === 0) {
+                return res.json({ success: true, message: 'No new sentences to add (all already exist)', added: 0, total: currentData.length });
+            }
+            
+            currentData.push(...newSentences);
+            await updateGitHubFile(FILE_PATH, currentData, `Imported ${newSentences.length} starter sentences`);
+            
+            res.json({ 
+                success: true, 
+                message: `Added ${newSentences.length} new sentences from starter list`, 
+                added: newSentences.length, 
+                total: currentData.length,
+                sentences: newSentences
+            });
+        } catch (fetchError) {
+            // Fallback: try to read from local file (for development)
+            const fs = require('fs');
+            const path = require('path');
+            const starterPath = path.join(__dirname, '../starter-data.json');
+            if (fs.existsSync(starterPath)) {
+                const starterSentences = JSON.parse(fs.readFileSync(starterPath, 'utf8'));
+                const fileData = await getGitHubFile(FILE_PATH);
+                let currentData = fileData ? await parseJSONSafely(fileData.content) : [];
+                const existingBnSet = new Set(currentData.map(s => s.bn));
+                const newSentences = starterSentences.filter(s => !existingBnSet.has(s.bn));
+                if (newSentences.length === 0) {
+                    return res.json({ success: true, message: 'No new sentences to add', added: 0, total: currentData.length });
+                }
+                currentData.push(...newSentences);
+                await updateGitHubFile(FILE_PATH, currentData, `Imported ${newSentences.length} starter sentences`);
+                res.json({ success: true, message: `Added ${newSentences.length} new sentences`, added: newSentences.length, total: currentData.length });
+            } else {
+                throw new Error('Starter data file not found');
+            }
+        }
+    } catch (error) { res.status(500).json({ error: error.message || 'Failed to import starter data' }); }
+});
+
 app.post('/api/add-sentence', async (req, res) => {
     try {
         const { bn, fr, category, email, topic, generateAI, fr_phonetic, bn_phonetic } = req.body;
