@@ -3,114 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monirul's French Island</title>
+    <title>Monirul's Language Island</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-<body class="bg-slate-100 min-h-screen p-4">
-    <div class="max-w-2xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden mt-6">
-        <div class="bg-indigo-600 p-6">
-            <h1 class="text-2xl font-bold text-white text-center">Monirul's Language Island 🇫🇷</h1>
-        </div>
+<body class="bg-slate-50 min-h-screen pb-20">
 
-        <div class="p-6">
-            <!-- ইনপুট সেকশন -->
-            <div class="space-y-4 mb-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input id="bn" type="text" placeholder="বাংলা বাক্য" class="p-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
-                    <input id="fr" type="text" placeholder="French Translation" class="p-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
-                </div>
-                <div class="flex gap-4">
-                    <input id="category" type="text" list="cat-list" placeholder="ক্যাটাগরি টাইপ করুন" class="flex-grow p-3 border rounded-xl outline-none">
-                    <datalist id="cat-list">
-                        <option value="Apparel">
-                        <option value="Tech">
-                        <option value="General">
-                    </datalist>
-                    <button onclick="addSentence()" id="btn" class="bg-indigo-600 text-white px-6 rounded-xl font-bold hover:bg-indigo-700 transition">Add</button>
-                </div>
-            </div>
+    <!-- Header & Login -->
+    <nav class="bg-indigo-600 text-white p-4 shadow-lg flex justify-between items-center">
+        <h1 class="text-xl font-bold">🇫🇷 Language Island</h1>
+        <div id="g_id_onload" data-client_id="YOUR_GOOGLE_CLIENT_ID" data-callback="handleCredentialResponse"></div>
+        <div class="g_id_signin" data-type="standard"></div>
+    </nav>
 
-            <hr class="mb-6">
-
-            <!-- সার্চ বার -->
-            <div class="mb-6">
-                <input id="search" onkeyup="filterList()" type="text" placeholder="সার্চ করুন..." class="w-full p-3 bg-gray-50 border rounded-xl outline-none">
-            </div>
-
-            <!-- লিস্ট -->
-            <div id="list" class="space-y-4">
-                <p class="text-center text-gray-400">Loading your island...</p>
+    <main class="max-w-3xl mx-auto p-4 mt-6">
+        
+        <!-- AI Generator Section (Only for Admin - Hidden by default) -->
+        <div id="adminPanel" class="hidden bg-white p-6 rounded-2xl shadow-sm mb-6 border-2 border-indigo-200">
+            <h2 class="font-bold text-indigo-700 mb-4 text-sm uppercase">Admin Tool: AI Generator</h2>
+            <div class="flex gap-2">
+                <input id="aiTopic" type="text" placeholder="উদা: Office, Kitchen, Fabric" class="flex-grow p-3 border rounded-xl outline-none">
+                <button onclick="generateAI()" id="aiBtn" class="bg-indigo-600 text-white px-6 rounded-xl font-bold">Generate</button>
             </div>
         </div>
-    </div>
+
+        <!-- Search & Stats -->
+        <div class="flex gap-4 mb-6">
+            <input id="search" onkeyup="filterList()" type="text" placeholder="খুঁজুন (বাংলা বা ফরাসি)..." class="flex-grow p-4 bg-white shadow-sm rounded-2xl outline-none">
+            <button onclick="toggleRecall()" class="bg-orange-500 text-white px-6 rounded-2xl font-bold shadow-md">Active Recall</button>
+        </div>
+
+        <!-- Sentence List -->
+        <div id="list" class="space-y-4"></div>
+    </main>
 
     <script>
         let allData = [];
+        let recallMode = false;
+        let currentUser = null;
+
+        // গুগল লগইন হ্যান্ডলার
+        function handleCredentialResponse(response) {
+            const payload = JSON.parse(atob(response.credential.split('.')[1]));
+            currentUser = payload.email;
+            if (currentUser === "YOUR_ADMIN_EMAIL") {
+                document.getElementById('adminPanel').classList.remove('hidden');
+            }
+        }
 
         async function loadIsland() {
-            try {
-                const res = await fetch('/api/island');
-                allData = await res.json();
-                renderList(allData);
-            } catch (e) {
-                document.getElementById('list').innerHTML = "<p class='text-red-500 text-center'>ডেটা লোড করতে সমস্যা হচ্ছে।</p>";
-            }
+            const res = await fetch('/api/island');
+            allData = await res.json();
+            renderList(allData);
         }
 
         function renderList(items) {
             const listDiv = document.getElementById('list');
-            if (items.length === 0) {
-                listDiv.innerHTML = "<p class='text-center text-gray-400'>কোনো বাক্য পাওয়া যায়নি।</p>";
-                return;
-            }
-            listDiv.innerHTML = [...items].reverse().map(item => `
-                <div class="p-4 border rounded-2xl relative bg-white hover:shadow-md transition">
-                    <span class="absolute top-2 right-2 text-[10px] bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-bold uppercase">
-                        ${item.category || 'General'}
-                    </span>
-                    <p class="font-bold text-indigo-900 text-lg">${item.fr}</p>
-                    <p class="text-gray-600 text-sm">${item.bn}</p>
+            listDiv.innerHTML = [...items].reverse().map((item, index) => `
+                <div class="p-5 bg-white rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center group">
+                    <div class="flex-grow cursor-pointer" onclick="this.querySelector('.fr-text').classList.toggle('hidden')">
+                        <p class="text-sm text-gray-400 mb-1">${item.category || 'General'}</p>
+                        <p class="text-lg text-gray-800 font-medium">${item.bn}</p>
+                        <p class="fr-text text-xl font-bold text-indigo-600 mt-1 ${recallMode ? 'hidden' : ''}">${item.fr}</p>
+                    </div>
+                    <button onclick="speak('${item.fr}')" class="bg-indigo-50 p-3 rounded-full hover:bg-indigo-100 transition">
+                        🔊
+                    </button>
                 </div>
             `).join('');
         }
 
+        function speak(text) {
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'fr-FR';
+            msg.rate = 0.8; // একটু স্লো যাতে শ্যাডোয়িং করতে সুবিধা হয়
+            window.speechSynthesis.speak(msg);
+        }
+
+        function toggleRecall() {
+            recallMode = !recallMode;
+            renderList(allData);
+            alert(recallMode ? "Active Recall Mode: ক্লিক করলে ফরাসি দেখা যাবে।" : "Normal Mode");
+        }
+
+        async function generateAI() {
+            const topic = document.getElementById('aiTopic').value;
+            const btn = document.getElementById('aiBtn');
+            btn.innerText = "...";
+            const res = await fetch('/api/ai-generate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ topic })
+            });
+            const data = await res.json();
+            if(confirm(`Add this? \nBN: ${data.bn} \nFR: ${data.fr}`)) {
+                await fetch('/api/add', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ ...data, category: topic, userEmail: currentUser })
+                });
+                location.reload();
+            }
+            btn.innerText = "Generate";
+        }
+
         function filterList() {
             const term = document.getElementById('search').value.toLowerCase();
-            const filtered = allData.filter(i => i.bn.toLowerCase().includes(term) || i.fr.toLowerCase().includes(term) || i.category?.toLowerCase().includes(term));
+            const filtered = allData.filter(i => i.bn.toLowerCase().includes(term) || i.fr.toLowerCase().includes(term));
             renderList(filtered);
         }
 
-        async function addSentence() {
-            const btn = document.getElementById('btn');
-            const bn = document.getElementById('bn').value;
-            const fr = document.getElementById('fr').value;
-            const category = document.getElementById('category').value;
-
-            if (!bn || !fr) return alert("বাংলা এবং ফরাসি উভয় ঘর পূরণ করুন!");
-
-            btn.disabled = true;
-            btn.innerText = "Saving...";
-
-            try {
-                const response = await fetch('/api/add', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ bn, fr, category })
-                });
-                
-                if (response.ok) {
-                    location.reload();
-                } else {
-                    alert("গিটহাবে সেভ হতে সমস্যা হয়েছে। আপনার Vercel-এর GITHUB_TOKEN চেক করুন।");
-                    btn.disabled = false;
-                    btn.innerText = "Add";
-                }
-            } catch (error) {
-                alert("এরর: " + error.message);
-                btn.disabled = false;
-                btn.innerText = "Add";
-            }
-        }
         loadIsland();
     </script>
 </body>
