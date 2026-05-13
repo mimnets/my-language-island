@@ -8,7 +8,7 @@
 </head>
 <body class="bg-gray-100 min-h-screen p-8">
 
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-5xl mx-auto">
         <div class="bg-white p-8 rounded-3xl shadow-lg mb-8">
             <div class="flex justify-between items-center border-b pb-6 mb-6">
                 <div>
@@ -28,33 +28,54 @@
                 </div>
             </div>
 
-            <div id="adminTools" class="hidden space-y-6">
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="bg-amber-50 p-6 rounded-2xl border border-amber-200">
-                        <h3 class="font-bold text-amber-800 mb-3">✨ AI Generator</h3>
-                        <div class="flex gap-3">
-                            <input id="aiTopic" type="text" placeholder="Topic (e.g. Shopping)" class="flex-grow p-3 rounded-xl border border-amber-200 outline-none">
-                            <button onclick="generateAI()" id="genBtn" class="bg-amber-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-amber-600 transition">Generate</button>
+            <div id="adminTools" class="hidden space-y-8">
+                
+                <!-- AI Generator with Phonetics -->
+                <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-6 rounded-2xl border border-amber-200">
+                    <h3 class="font-bold text-amber-800 mb-4">✨ AI Generator (with Phonetics)</h3>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <input id="aiTopic" type="text" placeholder="Topic (e.g. Fashion, Shopping)" class="p-3 rounded-xl border border-amber-200 outline-none">
+                        <input id="aiCategory" type="text" placeholder="Category name" class="p-3 rounded-xl border border-amber-200 outline-none">
+                    </div>
+                    <button onclick="generateAI()" id="genBtn" class="mt-4 w-full bg-amber-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-amber-600 transition">Generate with Phonetics</button>
+                </div>
+
+                <!-- Stats -->
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-200">
+                        <h3 class="font-bold text-indigo-800 mb-3">📊 Island Statistics</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Total Sentences</span>
+                                <span id="totalApproved" class="font-bold text-indigo-700">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Pending Review</span>
+                                <span id="totalPending" class="font-bold text-amber-700">0</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-200">
-                        <h3 class="font-bold text-indigo-800 mb-3">📊 Statistics</h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="text-center">
-                                <p id="totalApproved" class="text-2xl font-bold text-indigo-700">0</p>
-                                <p class="text-xs text-gray-500">Approved</p>
-                            </div>
-                            <div class="text-center">
-                                <p id="totalPending" class="text-2xl font-bold text-amber-700">0</p>
-                                <p class="text-xs text-gray-500">Pending Review</p>
-                            </div>
+                    <div class="bg-green-50 p-6 rounded-2xl border border-green-200 md:col-span-2">
+                        <h3 class="font-bold text-green-800 mb-3">🔊 Text-to-Speech Test</h3>
+                        <div class="flex gap-3">
+                            <input id="testFr" type="text" placeholder="French text to speak" class="flex-grow p-3 rounded-xl border border-green-200 outline-none">
+                            <button onclick="testSpeak()" class="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition">🔊 Speak</button>
                         </div>
                     </div>
                 </div>
 
+                <!-- Pending Submissions -->
                 <div>
                     <h3 class="font-bold text-gray-800 mb-4">📋 Pending Submissions</h3>
                     <div id="pendingList" class="space-y-4">
+                        <p class="text-center text-gray-400 py-8">Loading...</p>
+                    </div>
+                </div>
+
+                <!-- Manage Island (Delete Sentences) -->
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-4">🗑️ Manage Island Sentences</h3>
+                    <div id="islandList" class="space-y-3">
                         <p class="text-center text-gray-400 py-8">Loading...</p>
                     </div>
                 </div>
@@ -78,6 +99,7 @@
             document.getElementById('adminTools').classList.remove('hidden');
             loadStats();
             loadPending();
+            loadIsland();
         }
 
         async function loadStats() {
@@ -118,19 +140,51 @@
                     var item = data[i];
                     html += '<div class="bg-gray-50 p-5 rounded-2xl border">' +
                         '<div class="flex justify-between items-start gap-4">' +
-                        '<div class="flex-grow">' +
-                        '<span class="inline-block text-[10px] bg-amber-100 text-amber-700 px-2 py-1 rounded-md font-bold uppercase mb-2">' + (item.category || 'General') + '</span>' +
-                        '<p class="text-gray-500 text-sm mb-1">' + (item.submitterEmail || 'anonymous') + '</p>' +
-                        '<p class="text-gray-600 text-sm mb-1">' + (item.bn || '') + '</p>' +
-                        '<p class="text-lg font-bold text-indigo-700">' + (item.fr || '') + '</p>' +
+                        '<div class="flex-grow space-y-2">' +
+                        '<span class="inline-block text-[10px] bg-amber-100 text-amber-700 px-2 py-1 rounded-md font-bold uppercase">' + (item.category || 'General') + '</span>' +
+                        '<p class="text-xs text-gray-500">From: ' + (item.submitterEmail || 'anonymous') + '</p>' +
+                        '<div class="grid grid-cols-2 gap-4 text-sm">' +
+                        '<div><span class="text-gray-400 text-xs">বাংলা:</span><p class="text-gray-800">' + (item.bn || '') + '</p></div>' +
+                        '<div><span class="text-gray-400 text-xs">বাংলা উচ্চারণ:</span><p class="text-gray-600 italic">' + (item.bn_phonetic || '-') + '</p></div>' +
+                        '<div><span class="text-gray-400 text-xs">Français:</span><p class="text-lg font-bold text-indigo-700">' + (item.fr || '') + '</p></div>' +
+                        '<div><span class="text-gray-400 text-xs">Phonétique:</span><p class="text-gray-600 italic">' + (item.fr_phonetic || '-') + '</p></div>' +
+                        '</div>' +
                         '<p class="text-xs text-gray-400 mt-2">' + (item.submittedAt || '') + '</p></div>' +
-                        '<div class="flex gap-2">' +
-                        '<button onclick="approve(\'' + item.id + '\')" class="bg-green-500 text-white px-4 py-2 rounded-xl font-semibold hover:bg-green-600 transition">✓ Approve</button>' +
-                        '<button onclick="reject(\'' + item.id + '\')" class="bg-red-100 text-red-600 px-4 py-2 rounded-xl font-semibold hover:bg-red-200 transition">✗ Reject</button></div></div>';
+                        '<div class="flex flex-col gap-2">' +
+                        '<button onclick="approve(\'' + item.id + '\')" class="bg-green-500 text-white px-4 py-2 rounded-xl font-semibold hover:bg-green-600 transition text-sm">✓ Approve</button>' +
+                        '<button onclick="reject(\'' + item.id + '\')" class="bg-red-100 text-red-600 px-4 py-2 rounded-xl font-semibold hover:bg-red-200 transition text-sm">✗ Reject</button></div></div>';
                 }
                 list.innerHTML = html;
             } catch(e) {
                 list.innerHTML = '<p class="text-center text-red-400 py-8">Failed to load pending submissions</p>';
+            }
+        }
+
+        async function loadIsland() {
+            var list = document.getElementById('islandList');
+            try {
+                var res = await fetch('/api/island');
+                var data = await res.json();
+                
+                if (data.length === 0) {
+                    list.innerHTML = '<p class="text-center text-gray-400 py-8">No sentences in island</p>';
+                    return;
+                }
+                
+                var html = '';
+                for (var i = 0; i < data.length; i++) {
+                    var item = data[i];
+                    html += '<div class="bg-white p-4 rounded-xl border flex justify-between items-center gap-4 hover:bg-gray-50 transition">' +
+                        '<div class="flex-grow min-w-0">' +
+                        '<span class="inline-block text-[10px] bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md font-bold uppercase mb-1">' + (item.category || 'General') + '</span>' +
+                        '<p class="text-sm text-gray-600 truncate">' + (item.bn || '') + '</p>' +
+                        '<p class="text-lg font-bold text-indigo-700 truncate">' + (item.fr || '') + '</p>' +
+                        '</div>' +
+                        '<button onclick="deleteSentence(\'' + (item.id || item.bn) + '\')" class="bg-red-100 text-red-600 px-4 py-2 rounded-xl font-semibold hover:bg-red-200 transition text-sm flex-shrink-0">🗑️ Delete</button></div>';
+                }
+                list.innerHTML = html;
+            } catch(e) {
+                list.innerHTML = '<p class="text-center text-red-400 py-8">Failed to load island</p>';
             }
         }
 
@@ -146,8 +200,9 @@
                     alert('Sentence approved and added to island!');
                     loadStats();
                     loadPending();
+                    loadIsland();
                 } else {
-                    var msg = data.error === 'rate_limit' ? data.message : ('Error: ' + (data.error || 'Failed')); alert(msg);
+                    alert('Error: ' + (data.error || 'Failed'));
                 }
             } catch(e) { alert('Failed to approve'); }
         }
@@ -165,34 +220,76 @@
                     loadStats();
                     loadPending();
                 } else {
-                    var msg = data.error === 'rate_limit' ? data.message : ('Error: ' + (data.error || 'Failed')); alert(msg);
+                    alert('Error: ' + (data.error || 'Failed'));
                 }
             } catch(e) { alert('Failed to reject'); }
         }
 
+        async function deleteSentence(id) {
+            if (!confirm('Delete this sentence from island? This cannot be undone.')) return;
+            try {
+                var res = await fetch('/api/admin/delete', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email: adminEmail, id: id})
+                });
+                var data = await res.json();
+                if (data.success) {
+                    alert('Sentence deleted!');
+                    loadStats();
+                    loadIsland();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed'));
+                }
+            } catch(e) { alert('Failed to delete'); }
+        }
+
         async function generateAI() {
             var topic = document.getElementById('aiTopic').value;
+            var category = document.getElementById('aiCategory').value || topic;
             if (!topic) return;
+            
             var btn = document.getElementById('genBtn');
             btn.disabled = true;
             btn.textContent = 'Generating...';
+            
             try {
                 var res = await fetch('/api/add-sentence', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({topic: topic, email: adminEmail, generateAI: true})
+                    body: JSON.stringify({
+                        topic: topic,
+                        category: category,
+                        email: adminEmail,
+                        generateAI: true
+                    })
                 });
                 var data = await res.json();
                 if (data.success) {
-                    alert('Successfully added to island!');
+                    alert('Successfully added!\n\n' + 
+                        '🇫🇷 ' + data.sentence.fr + '\n' +
+                        '🔤 ' + (data.sentence.fr_phonetic || 'N/A') + '\n' +
+                        '🇧🇩 ' + data.sentence.bn + '\n' +
+                        '📝 ' + (data.sentence.bn_phonetic || 'N/A'));
                     document.getElementById('aiTopic').value = '';
+                    document.getElementById('aiCategory').value = '';
                     loadStats();
+                    loadIsland();
                 } else {
-                    var msg = data.error === 'rate_limit' ? data.message : ('Error: ' + (data.error || 'Failed')); alert(msg);
+                    alert('Error: ' + (data.error || 'Failed'));
                 }
             } catch(e) { alert('Failed to generate'); }
             btn.disabled = false;
-            btn.textContent = 'Generate';
+            btn.textContent = 'Generate with Phonetics';
+        }
+
+        function testSpeak() {
+            var text = document.getElementById('testFr').value;
+            if (!text) return;
+            var msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'fr-FR';
+            msg.rate = 0.85;
+            window.speechSynthesis.speak(msg);
         }
 
         function logout() { location.reload(); }

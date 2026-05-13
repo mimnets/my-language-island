@@ -9,6 +9,7 @@
         * { box-sizing: border-box; }
         .tab-active { border-bottom: 3px solid #6366f1; color: #6366f1; }
         .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px -5px rgba(0,0,0,0.1); }
+        .phonetic { font-family: monospace; font-size: 0.85em; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-indigo-50 min-h-screen">
@@ -67,10 +68,12 @@
             </div>
 
             <div id="flashcardContainer" class="hidden">
-                <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-3xl p-8 min-h-[280px] flex flex-col justify-center items-center shadow-2xl cursor-pointer" onclick="revealCard()">
+                <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-3xl p-8 min-h-[320px] flex flex-col justify-center items-center shadow-2xl cursor-pointer" onclick="revealCard()">
                     <p class="text-indigo-200 text-xs uppercase tracking-widest mb-4">Recall French</p>
-                    <p id="cardBengali" class="text-white text-2xl font-medium mb-6">বাংলা বাক্য</p>
+                    <p id="cardBengali" class="text-white text-xl font-medium mb-2">বাংলা বাক্য</p>
+                    <p id="cardBnPhonetic" class="text-indigo-300 text-sm italic mb-6 phonetic">bn phonetic</p>
                     <p id="cardFrench" class="text-white text-3xl font-bold hidden">French</p>
+                    <p id="cardFrPhonetic" class="text-indigo-200 text-lg italic hidden phonetic">fr phonetic</p>
                     <p id="tapHint" class="text-indigo-300 text-sm mt-4">Tap to reveal French</p>
                 </div>
 
@@ -82,11 +85,12 @@
 
                 <div id="aiGenerator" class="mt-8 hidden">
                     <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-6 rounded-2xl border border-amber-200">
-                        <h4 class="font-semibold text-amber-800 mb-3">✨ AI Sentence Generator (Admin Only)</h4>
-                        <div class="flex gap-3">
-                            <input id="aiTopic" type="text" placeholder="Topic (e.g. Fabric, Fashion)" class="flex-grow p-3 rounded-xl border border-amber-200 outline-none">
-                            <button onclick="generateAI()" id="aiBtn" class="bg-amber-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-amber-600 transition">Generate</button>
+                        <h4 class="font-semibold text-amber-800 mb-3">✨ AI Sentence Generator</h4>
+                        <div class="grid md:grid-cols-2 gap-3 mb-3">
+                            <input id="aiTopic" type="text" placeholder="Topic (e.g. Fashion)" class="p-3 rounded-xl border border-amber-200 outline-none">
+                            <input id="aiCategory" type="text" placeholder="Category name" class="p-3 rounded-xl border border-amber-200 outline-none">
                         </div>
+                        <button onclick="generateAI()" id="aiBtn" class="w-full bg-amber-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-amber-600 transition">Generate with Phonetics</button>
                     </div>
                 </div>
             </div>
@@ -113,6 +117,16 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">French *</label>
                         <input id="addFr" type="text" placeholder="French translation" class="w-full p-4 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300">
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">🇫🇷 French Phonetic (উচ্চারণ)</label>
+                            <input id="addFrPhonetic" type="text" placeholder="e.g. bon-ZHOOR" class="w-full p-4 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">🇧🇩 Bengali Phonetic (বাংলা উচ্চারণ)</label>
+                            <input id="addBnPhonetic" type="text" placeholder="e.g. বোঁ-জোর" class="w-full p-4 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300">
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Category</label>
@@ -151,7 +165,7 @@
                 </div>
                 <div class="text-center text-sm text-gray-400">
                     <p>Built for <strong>Monirul Islam</strong> 🇧🇩</p>
-                    <p class="mt-1">Powered by Gemini AI & GitHub</p>
+                    <p class="mt-1">Powered by Groq AI & GitHub</p>
                 </div>
             </div>
         </section>
@@ -212,13 +226,19 @@
                 var item = items[k];
                 var bn = escapeHtml(item.bn || '');
                 var fr = escapeHtml(item.fr || '');
+                var frPh = escapeHtml(item.fr_phonetic || '');
+                var bnPh = escapeHtml(item.bn_phonetic || '');
                 var cat = escapeHtml(item.category || 'General');
+                
                 html += '<div class="card-hover p-5 bg-white rounded-2xl shadow-sm border border-gray-100 transition-all">' +
                     '<div class="flex justify-between items-start gap-4">' +
                     '<div class="flex-grow">' +
                     '<span class="inline-block text-[10px] bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md font-bold uppercase mb-2">' + cat + '</span>' +
                     '<p class="text-gray-500 text-sm mb-1">' + bn + '</p>' +
-                    '<p class="text-xl font-bold text-indigo-700">' + fr + '</p></div>' +
+                    (bnPh ? '<p class="text-gray-400 text-xs italic mb-2 phonetic">🔤 ' + bnPh + '</p>' : '') +
+                    '<p class="text-xl font-bold text-indigo-700">' + fr + '</p>' +
+                    (frPh ? '<p class="text-indigo-400 text-sm italic phonetic">🔤 ' + frPh + '</p>' : '') + 
+                    '</div>' +
                     '<button onclick="speak(\'' + fr.replace(/'/g, "\\'") + '\')" class="flex-shrink-0 bg-indigo-50 p-3 rounded-full hover:bg-indigo-600 hover:text-white transition-colors text-lg" title="Listen">🔊</button></div>' +
                     (item.date ? '<p class="text-xs text-gray-400 mt-2">' + item.date + '</p>' : '') + '</div>';
             }
@@ -239,7 +259,7 @@
             var html = '<button onclick="filterByCategory(\'all\')" class="category-pill px-3 py-1 rounded-full text-xs font-medium bg-indigo-600 text-white whitespace-nowrap">All</button>';
             for (var j = 0; j < cats.length; j++) {
                 var safeCat = cats[j].replace(/'/g, "\\'");
-                html += '<button onclick="filterByCategory(\'' + safeCat + '\')" class="category-pill px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-700 whitespace-nowrap">' + escapeHtml(cats[j]) + '</button>';
+                html += '<button onclick="filterByCategory(\'' + safeCat + '\')" class="category-pill px-3 py3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-700 whitespace-nowrap">' + escapeHtml(cats[j]) + '</button>';
             }
             container.innerHTML = html;
         }
@@ -271,7 +291,9 @@
                     var item = allData[i];
                     if ((item.bn && item.bn.toLowerCase().indexOf(term) !== -1) ||
                         (item.fr && item.fr.toLowerCase().indexOf(term) !== -1) ||
-                        (item.category && item.category.toLowerCase().indexOf(term) !== -1)) {
+                        (item.category && item.category.toLowerCase().indexOf(term) !== -1) ||
+                        (item.fr_phonetic && item.fr_phonetic.toLowerCase().indexOf(term) !== -1) ||
+                        (item.bn_phonetic && item.bn_phonetic.toLowerCase().indexOf(term) !== -1)) {
                         filtered.push(item);
                     }
                 }
@@ -296,8 +318,11 @@
             if (allData.length === 0) return;
             var item = allData[currentIndex];
             document.getElementById('cardBengali').textContent = item.bn || '';
+            document.getElementById('cardBnPhonetic').textContent = item.bn_phonetic || '';
             document.getElementById('cardFrench').textContent = item.fr || '';
+            document.getElementById('cardFrPhonetic').textContent = item.fr_phonetic || '';
             document.getElementById('cardFrench').classList.add('hidden');
+            document.getElementById('cardFrPhonetic').classList.add('hidden');
             document.getElementById('tapHint').textContent = 'Tap to reveal French';
             cardRevealed = false;
         }
@@ -305,6 +330,7 @@
         function revealCard() {
             if (!cardRevealed) {
                 document.getElementById('cardFrench').classList.remove('hidden');
+                document.getElementById('cardFrPhonetic').classList.remove('hidden');
                 document.getElementById('tapHint').textContent = 'Tap for next card';
                 cardRevealed = true;
             } else {
@@ -349,6 +375,7 @@
         async function generateAI() {
             if (!isAdmin) return showToast('Verify admin first', 'error');
             var topic = document.getElementById('aiTopic').value;
+            var category = document.getElementById('aiCategory').value || topic;
             var email = document.getElementById('adminEmail').value;
             if (!topic) return showToast('Enter a topic', 'error');
             var btn = document.getElementById('aiBtn');
@@ -358,7 +385,7 @@
                 var res = await fetch('/api/add-sentence', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({topic: topic, email: email, generateAI: true})
+                    body: JSON.stringify({topic: topic, category: category, email: email, generateAI: true})
                 });
                 var data = await res.json();
                 if (data.success) {
@@ -367,19 +394,22 @@
                     renderList(allData);
                     updateCategoryPills();
                     document.getElementById('aiTopic').value = '';
-                    showToast('Sentence added!', 'success');
+                    document.getElementById('aiCategory').value = '';
+                    showToast('Sentence added with phonetics!', 'success');
                 } else {
-                    var msg = data.error === 'rate_limit' ? 'AI quota exceeded. Wait a few seconds and try again!' : (data.error || 'Failed'); showToast(msg, 'error');
+                    showToast(data.error || 'Failed', 'error');
                 }
             } catch (e) { showToast('AI generation failed', 'error'); }
             btn.disabled = false;
-            btn.textContent = 'Generate';
+            btn.textContent = 'Generate with Phonetics';
         }
 
         async function submitSentence() {
             var submitterEmail = document.getElementById('submitterEmail').value;
             var bn = document.getElementById('addBn').value;
             var fr = document.getElementById('addFr').value;
+            var frPhonetic = document.getElementById('addFrPhonetic').value;
+            var bnPhonetic = document.getElementById('addBnPhonetic').value;
             var category = document.getElementById('addCat').value;
             if (!bn || !fr) return showToast('Fill Bengali and French fields', 'error');
             var btn = document.getElementById('submitBtn');
@@ -389,13 +419,15 @@
                 var res = await fetch('/api/submit-sentence', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({bn: bn, fr: fr, category: category, submitterEmail: submitterEmail})
+                    body: JSON.stringify({bn: bn, fr: fr, fr_phonetic: frPhonetic, bn_phonetic: bnPhonetic, category: category, submitterEmail: submitterEmail})
                 });
                 var data = await res.json();
                 var status = document.getElementById('addStatus');
                 if (data.success) {
                     document.getElementById('addBn').value = '';
                     document.getElementById('addFr').value = '';
+                    document.getElementById('addFrPhonetic').value = '';
+                    document.getElementById('addBnPhonetic').value = '';
                     document.getElementById('addCat').value = '';
                     status.textContent = 'Submitted! Admin will review soon.';
                     status.className = 'mt-4 text-center text-sm text-green-600';
@@ -405,7 +437,7 @@
                     status.textContent = data.error || 'Failed to submit';
                     status.className = 'mt-4 text-center text-sm text-red-600';
                     status.classList.remove('hidden');
-                    var msg = data.error === 'rate_limit' ? 'AI quota exceeded. Wait a few seconds and try again!' : (data.error || 'Failed'); showToast(msg, 'error');
+                    showToast(data.error || 'Failed', 'error');
                 }
             } catch (e) { showToast('Submission failed', 'error'); }
             btn.disabled = false;

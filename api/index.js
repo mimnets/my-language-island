@@ -88,7 +88,7 @@ app.get('/api/island', async (req, res) => {
 // POST /submit-sentence - PUBLIC - Anyone can submit for review
 app.post('/api/submit-sentence', async (req, res) => {
     try {
-        const { bn, fr, category, submitterEmail } = req.body;
+        const { bn, fr, category, submitterEmail, fr_phonetic, bn_phonetic } = req.body;
         
         if (!bn || !fr) {
             return res.status(400).json({ error: 'Bengali and French sentences are required' });
@@ -98,6 +98,8 @@ app.post('/api/submit-sentence', async (req, res) => {
             id: Date.now().toString(),
             bn: bn.trim(),
             fr: fr.trim(),
+            fr_phonetic: fr_phonetic?.trim() || '',
+            bn_phonetic: bn_phonetic?.trim() || '',
             category: (category || 'General').trim(),
             submitterEmail: submitterEmail || 'anonymous',
             date: new Date().toISOString().split('T')[0],
@@ -197,6 +199,8 @@ app.post('/api/admin/approve', async (req, res) => {
         const approvedSentence = {
             bn: submission.bn,
             fr: submission.fr,
+            fr_phonetic: submission.fr_phonetic || '',
+            bn_phonetic: submission.bn_phonetic || '',
             category: submission.category,
             date: new Date().toISOString().split('T')[0],
             approvedBy: email
@@ -259,16 +263,65 @@ app.post('/api/admin/reject', async (req, res) => {
     }
 });
 
+// POST /admin/delete - Delete a sentence from island (admin only)
+app.post('/api/admin/delete', async (req, res) => {
+    try {
+        const { email, id } = req.body;
+        
+        if (!email || email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+            return res.status(403).json({ error: 'Unauthorized' });
+        }
+        
+        if (!id) {
+            return res.status(400).json({ error: 'Sentence ID required' });
+        }
+        
+        const fileData = await getGitHubFile(FILE_PATH);
+        if (!fileData) {
+            return res.status(404).json({ error: 'No sentences found' });
+        }
+        
+        let currentData = await parseJSONSafely(fileData.content);
+        const sentenceIndex = currentData.findIndex(s => s.id === id || s.bn === id);
+        
+        if (sentenceIndex === -1) {
+            return res.status(404).json({ error: 'Sentence not found' });
+        }
+        
+        const deletedSentence = currentData[sentenceIndex];
+        currentData.splice(sentenceIndex, 1);
+        
+        await updateGitHubFile(FILE_PATH, currentData, `Deleted: ${deletedSentence.bn}`);
+        
+        res.json({ 
+            success: true, 
+            message: 'Sentence deleted',
+            deleted: deletedSentence
+        });
+        
+    } catch (error) {
+        console.error('POST /admin/delete error:', error.message);
+        res.status(500).json({ error: error.message || 'Failed to delete sentence' });
+    }
+});
+
 // POST /add-sentence - AI generation (admin only)
 app.post('/api/add-sentence', async (req, res) => {
     try {
-        const { bn, fr, category, email, topic, generateAI } = req.body;
+        const { bn, fr, category, email, topic, generateAI, fr_phonetic, bn_phonetic } = req.body;
         
         if (!email || email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
             return res.status(403).json({ error: 'Unauthorized. Admin access only.' });
         }
         
-        let sentence = { bn, fr, category, date: new Date().toISOString().split('T')[0] };
+        let sentence = { 
+            bn: bn?.trim() || '', 
+            fr: fr?.trim() || '', 
+            fr_phonetic: fr_phonetic?.trim() || '', 
+            bn_phonetic: bn_phonetic?.trim() || '',
+            category: (category || 'General').trim(), 
+            date: new Date().toISOString().split('T')[0] 
+        };
         
         if (generateAI && topic) {
             if (!GROQ_API_KEY) {
@@ -277,8 +330,15 @@ app.post('/api/add-sentence', async (req, res) => {
                 });
             }
             
-            const prompt = `Generate exactly one French learning sentence for the topic "${topic}". Return ONLY valid JSON like this, no markdown or extra text:
-{"bn": "Bengali translation", "fr": "French sentence", "category": "${topic}"}`;
+            const prompt = `Generate exactly one French learning sentence for the topic "${topic}". 
+Return ONLY valid JSON like this, no markdown or extra text:
+{
+  "bn": "Bengali translation (বাংলা অর্থ)",
+  "fr": "French sentence",
+  "fr_phonetic": "French pronunciation in simple English phonetic spelling (e.g., 'bon-ZHOOR')",
+  "bn_phonetic": "How a Bengali speaker would pronounce the French words using Bengali letters (e.g., 'বোঁ-জোর')",
+  "category": "${topic}"
+}`;
             
             const GROQ_URL = `https://api.groq.com/openai/v1/chat/completions`;
             
@@ -293,7 +353,7 @@ app.post('/api/add-sentence', async (req, res) => {
                     messages: [
                         {
                             role: 'system',
-                            content: 'You are a helpful assistant that generates French learning sentences. Always respond with ONLY valid JSON like: {"bn": "Bengali text", "fr": "French text", "category": "Topic"}'
+                            content: 'You are a helpful French language tutor. Always respond with ONLY valid JSON like: {"bn": "Bengali text", "fr": "French text", "fr_phonetic": "English phonetic", "bn_phonetic": "Bengali phonetic spelling", "category": "Topic"}'
                         },
                         {
                             role: 'user',
@@ -301,7 +361,7 @@ app.post('/api/add-sentence', async (req, res) => {
                         }
                     ],
                     temperature: 0.7,
-                    max_tokens: 256
+                    max_tokens: 512
                 })
             });
             
@@ -324,8 +384,20 @@ app.post('/api/add-sentence', async (req, res) => {
                     cleaned = cleaned.substring(jsonStart, jsonEnd);
                 }
                 const parsed = JSON.parse(cleaned);
-                sentence = { ...parsed, category: topic, date: new Date().toISOString().split('T')[0] };
+                sentence = { 
+                    bn: parsed.bn || '', 
+                    fr: parsed.fr || '', 
+                    fr_phonetic: parsed.fr_phonetic || '', 
+                    bn_phonetic: parsed.bn_phonetic || '', 
+                    category: topic, 
+                    date: new Date().toISOString().split('T')[0] 
+                };
             }
+        }
+        
+        // Assign ID if not exists
+        if (!sentence.id) {
+            sentence.id = Date.now().toString();
         }
         
         const fileData = await getGitHubFile(FILE_PATH);
