@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Language Island</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-md mx-auto bg-white p-8 rounded-3xl shadow-lg">
+        <h1 class="text-xl font-bold mb-6 text-center">Admin Login</h1>
+        
+        <div id="loginSection" class="flex justify-center">
+            <div id="g_id_onload" data-client_id="339348039848-9sc9fgbg3ap3879d8a385m961q7noi18.apps.googleusercontent.com" data-callback="handleAdminLogin"></div>
+            <div class="g_id_signin" data-type="standard"></div>
+        </div>
+
+        <div id="adminTools" class="hidden space-y-6">
+            <div class="flex justify-between items-center border-b pb-4">
+                <span id="adminName" class="font-bold text-indigo-600"></span>
+                <button onclick="logout()" class="text-red-500 text-sm font-bold">Sign Out</button>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium mb-2 text-gray-500">AI Topic (e.g. Shopping)</label>
+                <input id="aiTopic" type="text" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-indigo-500">
+                <button id="genBtn" onclick="generate()" class="w-full mt-4 bg-indigo-600 text-white p-4 rounded-xl font-bold shadow-lg">Generate & Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let adminEmail = "";
+
+        function handleAdminLogin(response) {
+            const payload = JSON.parse(atob(response.credential.split('.')[1]));
+            adminEmail = payload.email;
+            document.getElementById('adminName').innerText = payload.name;
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('adminTools').classList.remove('hidden');
+        }
+
+        async function generate() {
+            const topic = document.getElementById('aiTopic').value;
+            if(!topic) return;
+            const btn = document.getElementById('genBtn');
+            btn.innerText = "Processing...";
+            btn.disabled = true;
+
+            const res = await fetch('/api/admin/add-ai', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ topic, email: adminEmail })
+            });
+            
+            if(res.ok) {
+                alert("Successfully added to GitHub!");
+                location.href = "/";
+            } else {
+                alert("Error! Check Admin Email in Vercel Env.");
+                btn.disabled = false;
+                btn.innerText = "Generate & Save";
+            }
+        }
+
+        function logout() { location.reload(); }
+    </script>
+</body>
+</html>
