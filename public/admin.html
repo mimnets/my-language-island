@@ -37,8 +37,12 @@
         <!-- Login Section -->
         <div id="loginSection" class="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-lg mb-6 sm:mb-8">
             <div class="flex flex-col items-center">
-                <div id="g_id_onload" data-client_id="339348039848-9sc9fgbg3ap3879d8a385m961q7noi18.apps.googleusercontent.com" data-callback="handleAdminLogin"></div>
+                <div id="g_id_onload" data-client_id="339348039848-9sc9fgbg3ap3879d8a385m961q7noi18.apps.googleusercontent.com" data-callback="handleAdminLogin" data-prompt="select_account"></div>
                 <div class="g_id_signin" data-type="standard"></div>
+                <div id="loginError" class="mt-4 text-center hidden">
+                    <p class="text-sm text-red-600 mb-2">This email is not authorized as admin.</p>
+                    <button onclick="location.reload()" class="text-sm text-indigo-600 hover:text-indigo-700 underline">Try different account</button>
+                </div>
                 <a href="/" class="mt-6 text-sm text-indigo-600 hover:text-indigo-700">← Back to Island</a>
             </div>
         </div>
@@ -182,17 +186,48 @@
     <script>
         var adminEmail = "";
 
-        function handleAdminLogin(response) {
-            var payload = JSON.parse(atob(response.credential.split('.')[1]));
-            adminEmail = payload.email;
-            document.getElementById('adminName').innerText = payload.name;
-            document.getElementById('loginSection').classList.add('hidden');
-            document.getElementById('adminInfo').classList.remove('hidden');
-            document.getElementById('adminTools').classList.remove('hidden');
-            loadStats();
-            loadPending();
-            loadIsland();
-            loadResources();
+        async function handleAdminLogin(response) {
+            try {
+                var payload = JSON.parse(atob(response.credential.split('.')[1]));
+                var email = payload.email;
+                
+                // Check with server if this email is admin
+                var checkRes = await fetch('/api/check-admin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+                
+                if (!checkRes.ok) {
+                    throw new Error('Failed to verify admin status');
+                }
+                
+                var checkData = await checkRes.json();
+                
+                if (!checkData.isAdmin) {
+                    // Not authorized
+                    document.getElementById('loginError').classList.remove('hidden');
+                    // Hide Google sign-in button and show message
+                    document.querySelector('.g_id_signin').style.display = 'none';
+                    return;
+                }
+                
+                // Email is authorized admin
+                adminEmail = email;
+                document.getElementById('adminName').innerText = payload.name;
+                document.getElementById('loginError').classList.add('hidden');
+                document.querySelector('.g_id_signin').style.display = 'block';
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('adminInfo').classList.remove('hidden');
+                document.getElementById('adminTools').classList.remove('hidden');
+                loadStats();
+                loadPending();
+                loadIsland();
+                loadResources();
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Login failed: ' + error.message);
+            }
         }
 
         async function loadStats() {
