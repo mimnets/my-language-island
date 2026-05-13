@@ -32,7 +32,7 @@
             <div class="flex overflow-x-auto">
                 <button onclick="switchTab('island')" id="tab-island" class="tab-active px-6 py-4 text-sm font-semibold whitespace-nowrap transition-colors hover:text-indigo-600">🏝️ Island</button>
                 <button onclick="switchTab('recall')" id="tab-recall" class="px-6 py-4 text-sm font-semibold text-gray-500 whitespace-nowrap transition-colors hover:text-indigo-600">🧠 Active Recall</button>
-                <button onclick="switchTab('add')" id="tab-add" class="px-6 py-4 text-sm font-semibold text-gray-500 whitespace-nowrap transition-colors hover:text-indigo-600">➕ Add</button>
+                <button onclick="switchTab('add')" id="tab-add" class="px-6 py-4 text-sm font-semibold text-gray-500 whitespace-nowrap transition-colors hover:text-indigo-600">➕ Add Sentence</button>
                 <button onclick="switchTab('about')" id="tab-about" class="px-6 py-4 text-sm font-semibold text-gray-500 whitespace-nowrap transition-colors hover:text-indigo-600">📖 About</button>
             </div>
         </div>
@@ -56,9 +56,9 @@
         </section>
 
         <section id="section-recall" class="tab-content hidden">
-            <div id="adminCheck" class="mb-6">
+            <div class="mb-6">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border">
-                    <h3 class="font-semibold text-gray-700 mb-3">🔐 Admin Verification</h3>
+                    <h3 class="font-semibold text-gray-700 mb-3">🔐 Admin Verification (for AI Generator)</h3>
                     <div class="flex gap-3">
                         <input id="adminEmail" type="email" placeholder="your@email.com" class="flex-grow p-3 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300">
                         <button onclick="verifyAdmin()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition">Verify</button>
@@ -82,7 +82,7 @@
 
                 <div id="aiGenerator" class="mt-8 hidden">
                     <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-6 rounded-2xl border border-amber-200">
-                        <h4 class="font-semibold text-amber-800 mb-3">✨ AI Sentence Generator</h4>
+                        <h4 class="font-semibold text-amber-800 mb-3">✨ AI Sentence Generator (Admin Only)</h4>
                         <div class="flex gap-3">
                             <input id="aiTopic" type="text" placeholder="Topic (e.g. Fabric, Fashion)" class="flex-grow p-3 rounded-xl border border-amber-200 outline-none">
                             <button onclick="generateAI()" id="aiBtn" class="bg-amber-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-amber-600 transition">Generate</button>
@@ -98,25 +98,27 @@
 
         <section id="section-add" class="tab-content hidden">
             <div class="bg-white p-8 rounded-2xl shadow-sm border">
-                <h2 class="text-xl font-bold text-gray-800 mb-6">➕ Add New Sentence</h2>
-                <div class="mb-6 p-4 bg-gray-50 rounded-xl">
-                    <label class="block text-sm font-medium text-gray-600 mb-2">🔐 Admin Email</label>
-                    <input id="addEmail" type="email" placeholder="your@email.com" class="w-full p-3 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300">
-                </div>
+                <h2 class="text-xl font-bold text-gray-800 mb-2">➕ Submit New Sentence</h2>
+                <p class="text-sm text-gray-500 mb-6">Your sentence will be reviewed by admin before adding to the island.</p>
+                
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">Bengali (বাংলা)</label>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Your Email (optional)</label>
+                        <input id="submitterEmail" type="email" placeholder="your@email.com" class="w-full p-4 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Bengali (বাংলা) *</label>
                         <input id="addBn" type="text" placeholder="বাংলা বাক্য লিখুন" class="w-full p-4 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">French</label>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">French *</label>
                         <input id="addFr" type="text" placeholder="French translation" class="w-full p-4 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Category</label>
                         <input id="addCat" type="text" placeholder="e.g. Fashion, Daily, Apparel" class="w-full p-4 rounded-xl border outline-none focus:ring-2 focus:ring-indigo-300">
                     </div>
-                    <button onclick="submitSentence()" id="submitBtn" class="w-full bg-indigo-600 text-white p-4 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition">Submit</button>
+                    <button onclick="submitSentence()" id="submitBtn" class="w-full bg-indigo-600 text-white p-4 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition">Submit for Review</button>
                 </div>
                 <p id="addStatus" class="mt-4 text-center text-sm hidden"></p>
             </div>
@@ -336,9 +338,8 @@
                 var data = await res.json();
                 if (data.isAdmin) {
                     isAdmin = true;
-                    document.getElementById('adminCheck').classList.add('hidden');
                     document.getElementById('aiGenerator').classList.remove('hidden');
-                    showToast('Admin verified! Access granted', 'success');
+                    showToast('Admin verified!', 'success');
                 } else {
                     showToast('Access denied. Admin only.', 'error');
                 }
@@ -346,6 +347,7 @@
         }
 
         async function generateAI() {
+            if (!isAdmin) return showToast('Verify admin first', 'error');
             var topic = document.getElementById('aiTopic').value;
             var email = document.getElementById('adminEmail').value;
             if (!topic) return showToast('Enter a topic', 'error');
@@ -365,7 +367,7 @@
                     renderList(allData);
                     updateCategoryPills();
                     document.getElementById('aiTopic').value = '';
-                    showToast('Sentence added via AI!', 'success');
+                    showToast('Sentence added!', 'success');
                 } else {
                     showToast(data.error || 'Failed', 'error');
                 }
@@ -375,43 +377,39 @@
         }
 
         async function submitSentence() {
-            var email = document.getElementById('addEmail').value;
+            var submitterEmail = document.getElementById('submitterEmail').value;
             var bn = document.getElementById('addBn').value;
             var fr = document.getElementById('addFr').value;
             var category = document.getElementById('addCat').value;
-            if (!email || !bn || !fr) return showToast('Fill all fields', 'error');
+            if (!bn || !fr) return showToast('Fill Bengali and French fields', 'error');
             var btn = document.getElementById('submitBtn');
             btn.disabled = true;
             btn.textContent = 'Submitting...';
             try {
-                var res = await fetch('/api/add-sentence', {
+                var res = await fetch('/api/submit-sentence', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({email: email, bn: bn, fr: fr, category: category})
+                    body: JSON.stringify({bn: bn, fr: fr, category: category, submitterEmail: submitterEmail})
                 });
                 var data = await res.json();
                 var status = document.getElementById('addStatus');
                 if (data.success) {
-                    allData.push(data.sentence);
-                    document.getElementById('totalCount').textContent = allData.length;
-                    renderList(allData);
-                    updateCategoryPills();
                     document.getElementById('addBn').value = '';
                     document.getElementById('addFr').value = '';
                     document.getElementById('addCat').value = '';
-                    status.textContent = 'Sentence added successfully!';
+                    status.textContent = 'Submitted! Admin will review soon.';
                     status.className = 'mt-4 text-center text-sm text-green-600';
                     status.classList.remove('hidden');
-                    showToast('Sentence added!', 'success');
+                    showToast('Submitted for review!', 'success');
                 } else {
-                    status.textContent = data.error || 'Failed to add';
+                    status.textContent = data.error || 'Failed to submit';
                     status.className = 'mt-4 text-center text-sm text-red-600';
                     status.classList.remove('hidden');
                     showToast(data.error || 'Failed', 'error');
                 }
             } catch (e) { showToast('Submission failed', 'error'); }
             btn.disabled = false;
-            btn.textContent = 'Submit';
+            btn.textContent = 'Submit for Review';
         }
 
         function speak(text) {

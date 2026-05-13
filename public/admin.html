@@ -2,65 +2,197 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <title>Admin - Language Island</title>
+    <title>Admin Panel - Language Island</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-<body class="bg-gray-100 p-8">
-    <div class="max-w-md mx-auto bg-white p-8 rounded-3xl shadow-lg">
-        <h1 class="text-xl font-bold mb-6 text-center">Admin Login</h1>
-        
-        <div id="loginSection" class="flex justify-center">
-            <div id="g_id_onload" data-client_id="339348039848-9sc9fgbg3ap3879d8a385m961q7noi18.apps.googleusercontent.com" data-callback="handleAdminLogin"></div>
-            <div class="g_id_signin" data-type="standard"></div>
-        </div>
+<body class="bg-gray-100 min-h-screen p-8">
 
-        <div id="adminTools" class="hidden space-y-6">
-            <div class="flex justify-between items-center border-b pb-4">
-                <span id="adminName" class="font-bold text-indigo-600"></span>
-                <button onclick="logout()" class="text-red-500 text-sm font-bold">Sign Out</button>
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white p-8 rounded-3xl shadow-lg mb-8">
+            <div class="flex justify-between items-center border-b pb-6 mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-indigo-700">🔐 Admin Panel</h1>
+                    <p class="text-sm text-gray-500">Language Island Management</p>
+                </div>
+                <div id="adminInfo" class="hidden flex items-center gap-4">
+                    <span id="adminName" class="font-bold text-indigo-600"></span>
+                    <button onclick="logout()" class="bg-red-100 text-red-600 px-4 py-2 rounded-xl font-semibold hover:bg-red-200 transition">Sign Out</button>
+                </div>
             </div>
             
-            <div>
-                <label class="block text-sm font-medium mb-2 text-gray-500">AI Topic (e.g. Shopping)</label>
-                <input id="aiTopic" type="text" class="w-full p-4 bg-gray-50 rounded-xl outline-none border focus:border-indigo-500">
-                <button id="genBtn" onclick="generate()" class="w-full mt-4 bg-indigo-600 text-white p-4 rounded-xl font-bold shadow-lg">Generate & Save</button>
+            <div id="loginSection">
+                <div class="flex justify-center">
+                    <div id="g_id_onload" data-client_id="339348039848-9sc9fgbg3ap3879d8a385m961q7noi18.apps.googleusercontent.com" data-callback="handleAdminLogin"></div>
+                    <div class="g_id_signin" data-type="standard"></div>
+                </div>
             </div>
+
+            <div id="adminTools" class="hidden space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-amber-50 p-6 rounded-2xl border border-amber-200">
+                        <h3 class="font-bold text-amber-800 mb-3">✨ AI Generator</h3>
+                        <div class="flex gap-3">
+                            <input id="aiTopic" type="text" placeholder="Topic (e.g. Shopping)" class="flex-grow p-3 rounded-xl border border-amber-200 outline-none">
+                            <button onclick="generateAI()" id="genBtn" class="bg-amber-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-amber-600 transition">Generate</button>
+                        </div>
+                    </div>
+                    <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-200">
+                        <h3 class="font-bold text-indigo-800 mb-3">📊 Statistics</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="text-center">
+                                <p id="totalApproved" class="text-2xl font-bold text-indigo-700">0</p>
+                                <p class="text-xs text-gray-500">Approved</p>
+                            </div>
+                            <div class="text-center">
+                                <p id="totalPending" class="text-2xl font-bold text-amber-700">0</p>
+                                <p class="text-xs text-gray-500">Pending Review</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-4">📋 Pending Submissions</h3>
+                    <div id="pendingList" class="space-y-4">
+                        <p class="text-center text-gray-400 py-8">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center text-sm text-gray-400">
+            <a href="/" class="hover:text-indigo-600">← Back to Island</a>
         </div>
     </div>
 
     <script>
-        let adminEmail = "";
+        var adminEmail = "";
 
         function handleAdminLogin(response) {
-            const payload = JSON.parse(atob(response.credential.split('.')[1]));
+            var payload = JSON.parse(atob(response.credential.split('.')[1]));
             adminEmail = payload.email;
             document.getElementById('adminName').innerText = payload.name;
             document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('adminInfo').classList.remove('hidden');
             document.getElementById('adminTools').classList.remove('hidden');
+            loadStats();
+            loadPending();
         }
 
-        async function generate() {
-            const topic = document.getElementById('aiTopic').value;
-            if(!topic) return;
-            const btn = document.getElementById('genBtn');
-            btn.innerText = "Processing...";
-            btn.disabled = true;
-
-            const res = await fetch('/api/admin/add-ai', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ topic, email: adminEmail })
-            });
+        async function loadStats() {
+            try {
+                var res = await fetch('/api/island');
+                if (res.ok) {
+                    var data = await res.json();
+                    document.getElementById('totalApproved').textContent = data.length;
+                }
+            } catch(e) {}
             
-            if(res.ok) {
-                alert("Successfully added to GitHub!");
-                location.href = "/";
-            } else {
-                alert("Error! Check Admin Email in Vercel Env.");
-                btn.disabled = false;
-                btn.innerText = "Generate & Save";
+            try {
+                var res2 = await fetch('/api/admin/pending', {
+                    headers: {'x-admin-email': adminEmail}
+                });
+                if (res2.ok) {
+                    var pending = await res2.json();
+                    document.getElementById('totalPending').textContent = pending.length;
+                }
+            } catch(e) {}
+        }
+
+        async function loadPending() {
+            var list = document.getElementById('pendingList');
+            try {
+                var res = await fetch('/api/admin/pending', {
+                    headers: {'x-admin-email': adminEmail}
+                });
+                var data = await res.json();
+                
+                if (data.length === 0) {
+                    list.innerHTML = '<p class="text-center text-gray-400 py-8">No pending submissions</p>';
+                    return;
+                }
+                
+                var html = '';
+                for (var i = 0; i < data.length; i++) {
+                    var item = data[i];
+                    html += '<div class="bg-gray-50 p-5 rounded-2xl border">' +
+                        '<div class="flex justify-between items-start gap-4">' +
+                        '<div class="flex-grow">' +
+                        '<span class="inline-block text-[10px] bg-amber-100 text-amber-700 px-2 py-1 rounded-md font-bold uppercase mb-2">' + (item.category || 'General') + '</span>' +
+                        '<p class="text-gray-500 text-sm mb-1">' + (item.submitterEmail || 'anonymous') + '</p>' +
+                        '<p class="text-gray-600 text-sm mb-1">' + (item.bn || '') + '</p>' +
+                        '<p class="text-lg font-bold text-indigo-700">' + (item.fr || '') + '</p>' +
+                        '<p class="text-xs text-gray-400 mt-2">' + (item.submittedAt || '') + '</p></div>' +
+                        '<div class="flex gap-2">' +
+                        '<button onclick="approve(\'' + item.id + '\')" class="bg-green-500 text-white px-4 py-2 rounded-xl font-semibold hover:bg-green-600 transition">✓ Approve</button>' +
+                        '<button onclick="reject(\'' + item.id + '\')" class="bg-red-100 text-red-600 px-4 py-2 rounded-xl font-semibold hover:bg-red-200 transition">✗ Reject</button></div></div>';
+                }
+                list.innerHTML = html;
+            } catch(e) {
+                list.innerHTML = '<p class="text-center text-red-400 py-8">Failed to load pending submissions</p>';
             }
+        }
+
+        async function approve(id) {
+            try {
+                var res = await fetch('/api/admin/approve', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email: adminEmail, id: id})
+                });
+                var data = await res.json();
+                if (data.success) {
+                    alert('Sentence approved and added to island!');
+                    loadStats();
+                    loadPending();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed'));
+                }
+            } catch(e) { alert('Failed to approve'); }
+        }
+
+        async function reject(id) {
+            if (!confirm('Reject this submission?')) return;
+            try {
+                var res = await fetch('/api/admin/reject', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email: adminEmail, id: id})
+                });
+                var data = await res.json();
+                if (data.success) {
+                    loadStats();
+                    loadPending();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed'));
+                }
+            } catch(e) { alert('Failed to reject'); }
+        }
+
+        async function generateAI() {
+            var topic = document.getElementById('aiTopic').value;
+            if (!topic) return;
+            var btn = document.getElementById('genBtn');
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+            try {
+                var res = await fetch('/api/add-sentence', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({topic: topic, email: adminEmail, generateAI: true})
+                });
+                var data = await res.json();
+                if (data.success) {
+                    alert('Successfully added to island!');
+                    document.getElementById('aiTopic').value = '';
+                    loadStats();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed'));
+                }
+            } catch(e) { alert('Failed to generate'); }
+            btn.disabled = false;
+            btn.textContent = 'Generate';
         }
 
         function logout() { location.reload(); }
