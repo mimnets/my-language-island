@@ -5,7 +5,7 @@ app.use(express.json());
 
 // ============ CONFIGURATION ============
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "mdmonirulislammonir@gmail.com";
 
 const REPO_OWNER = "mimnets";
@@ -221,7 +221,7 @@ app.post('/api/admin/approve', async (req, res) => {
 });
 
 // POST /admin/reject - Reject a submission (admin only)
-app.post('/admin/reject', async (req, res) => {
+app.post('/api/admin/reject', async (req, res) => {
     try {
         const { email, id } = req.body;
         
@@ -271,45 +271,50 @@ app.post('/api/add-sentence', async (req, res) => {
         let sentence = { bn, fr, category, date: new Date().toISOString().split('T')[0] };
         
         if (generateAI && topic) {
-            if (!GEMINI_API_KEY) {
+            if (!GROQ_API_KEY) {
                 return res.status(500).json({ 
-                    error: 'GEMINI_API_KEY is not set. Please add it to Vercel environment variables.' 
+                    error: 'GROQ_API_KEY is not set. Please add it to Vercel environment variables.' 
                 });
             }
             
             const prompt = `Generate exactly one French learning sentence for the topic "${topic}". Return ONLY valid JSON like this, no markdown or extra text:
 {"bn": "Bengali translation", "fr": "French sentence", "category": "${topic}"}`;
             
-            const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+            const GROQ_URL = `https://api.groq.com/openai/v1/chat/completions`;
             
-            const aiResponse = await fetch(GEMINI_URL, {
+            const aiResponse = await fetch(GROQ_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Authorization': `Bearer ${GROQ_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { temperature: 0.7, maxOutputTokens: 256 }
+                    model: 'llama-3.1-70b-versatile',
+                    messages: [
+                        {
+                            role: 'system',
+                            content: 'You are a helpful assistant that generates French learning sentences. Always respond with ONLY valid JSON like: {"bn": "Bengali text", "fr": "French text", "category": "Topic"}'
+                        },
+                        {
+                            role: 'user',
+                            content: prompt
+                        }
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 256
                 })
             });
-            
-            // Check for rate limit (429)
-            if (aiResponse.status === 429) {
-                return res.status(429).json({ 
-                    error: 'rate_limit',
-                    message: 'AI quota exceeded. Please wait a few seconds and try again, or check your Google AI quota at ai.google.dev/rate-limit',
-                    retryAfter: 20
-                });
-            }
             
             if (!aiResponse.ok) {
                 const errorData = await aiResponse.json();
                 const errorMsg = errorData?.error?.message || 'Unknown error';
                 return res.status(aiResponse.status).json({ 
-                    error: 'Gemini API failed: ' + errorMsg 
+                    error: 'Groq API failed: ' + errorMsg 
                 });
             }
             
             const aiData = await aiResponse.json();
-            const aiText = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
+            const aiText = aiData.choices?.[0]?.message?.content;
             
             if (aiText) {
                 let cleaned = aiText.trim();
@@ -341,7 +346,7 @@ app.get('/api/health', (req, res) => {
     res.json({ 
         status: 'ok', 
         adminEmail: ADMIN_EMAIL,
-        geminiKeySet: !!GEMINI_API_KEY,
+        groqKeySet: !!GROQ_API_KEY,
         timestamp: new Date().toISOString() 
     });
 });
