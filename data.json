@@ -529,5 +529,14 @@
     "category": "Receipt",
     "date": "2025-05-13",
     "id": "177867935050701g2zy8"
+  },
+  {
+    "bn": "কেমন আছো?",
+    "fr": "Comment ça va?",
+    "fr_phonetic": "Koh-moh sah vah",
+    "bn_phonetic": "Kemon acho?",
+    "category": "Greetings",
+    "date": "2026-05-13",
+    "id": "1778691713822"
   }
 ]
