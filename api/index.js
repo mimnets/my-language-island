@@ -24,7 +24,7 @@ async function getGitHubFile(filename) {
     });
     
     if (!response.ok) {
-        if (response.status === 404) return null; // File doesn't exist yet
+        if (response.status === 404) return null;
         throw new Error(`GitHub fetch failed: ${response.status}`);
     }
     
@@ -179,7 +179,6 @@ app.post('/api/admin/approve', async (req, res) => {
             return res.status(400).json({ error: 'Submission ID required' });
         }
         
-        // Get pending file
         const pendingFile = await getGitHubFile(PENDING_FILE);
         if (!pendingFile) {
             return res.status(404).json({ error: 'No pending submissions found' });
@@ -192,7 +191,6 @@ app.post('/api/admin/approve', async (req, res) => {
             return res.status(404).json({ error: 'Submission not found' });
         }
         
-        // Add to main data.json
         const mainFile = await getGitHubFile(FILE_PATH);
         let mainData = mainFile ? await parseJSONSafely(mainFile.content) : [];
         
@@ -207,7 +205,6 @@ app.post('/api/admin/approve', async (req, res) => {
         mainData.push(approvedSentence);
         await updateGitHubFile(FILE_PATH, mainData, `Approved: ${submission.bn}`);
         
-        // Remove from pending
         pendingData = pendingData.filter(s => s.id !== id);
         await updateGitHubFile(PENDING_FILE, pendingData, `Approved and removed: ${submission.bn}`);
         
@@ -248,7 +245,6 @@ app.post('/api/admin/reject', async (req, res) => {
             return res.status(404).json({ error: 'Submission not found' });
         }
         
-        // Remove from pending
         pendingData = pendingData.filter(s => s.id !== id);
         await updateGitHubFile(PENDING_FILE, pendingData, `Rejected: ${submission.bn}`);
         
@@ -275,10 +271,16 @@ app.post('/api/add-sentence', async (req, res) => {
         let sentence = { bn, fr, category, date: new Date().toISOString().split('T')[0] };
         
         if (generateAI && topic) {
+            if (!GEMINI_API_KEY) {
+                throw new Error('GEMINI_API_KEY environment variable is not set');
+            }
+            
             const prompt = `Generate exactly one French learning sentence for the topic "${topic}". Return ONLY valid JSON like this, no markdown or extra text:
 {"bn": "Bengali translation", "fr": "French sentence", "category": "${topic}"}`;
             
             const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            
+            console.log('Calling Gemini API with key:', GEMINI_API_KEY ? 'SET (' + GEMINI_API_KEY.substring(0, 10) + '...)' : 'NOT SET');
             
             const aiResponse = await fetch(GEMINI_URL, {
                 method: 'POST',
@@ -289,9 +291,17 @@ app.post('/api/add-sentence', async (req, res) => {
                 })
             });
             
-            if (!aiResponse.ok) throw new Error('Gemini API failed');
+            console.log('Gemini response status:', aiResponse.status);
+            
+            if (!aiResponse.ok) {
+                const errorText = await aiResponse.text();
+                console.log('Gemini error response:', errorText);
+                throw new Error('Gemini API failed: ' + errorText);
+            }
             
             const aiData = await aiResponse.json();
+            console.log('Gemini response:', JSON.stringify(aiData));
+            
             const aiText = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
             
             if (aiText) {
@@ -321,7 +331,12 @@ app.post('/api/add-sentence', async (req, res) => {
 
 // Health check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', adminEmail: ADMIN_EMAIL, timestamp: new Date().toISOString() });
+    res.json({ 
+        status: 'ok', 
+        adminEmail: ADMIN_EMAIL,
+        geminiKeySet: !!GEMINI_API_KEY,
+        timestamp: new Date().toISOString() 
+    });
 });
 
 module.exports = app;
